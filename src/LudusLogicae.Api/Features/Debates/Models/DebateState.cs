@@ -14,7 +14,7 @@ public sealed class DebateState
 
     public int TotalRounds { get; init; }
 
-    public CouncilMember[] Members { get; init; } = [];
+    public CouncilMember[] Members { get; set; } = [];
 
     [JsonIgnore]
     public Dictionary<int, string> SystemPrompts { get; set; } = new();

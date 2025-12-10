@@ -1,0 +1,536 @@
+.page {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 4rem); /* Account for main-content padding */
+    margin: -2rem; /* Offset the main-content padding */
+    background: var(--surface-primary);
+}
+
+/* Chat Header */
+.chatHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 2rem;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.chatTitle {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--text-primary);
+}
+
+/* Main Content Layout */
+.mainContent {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* Chat Container */
+.chatContainer {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* Info Sidebar */
+.infoSidebar {
+    width: 280px;
+    flex-shrink: 0;
+    background: var(--surface-secondary);
+    border-left: 1px solid var(--border-subtle);
+    padding: 1.5rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.infoSection {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.infoHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.infoText {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+}
+
+.contextText {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 0.5rem;
+    margin: -0.5rem;
+    border-radius: 0.25rem;
+    position: relative;
+    word-break: break-word;
+    max-height: calc(1.5em * 3 + 1rem);
+}
+
+.contextText:hover {
+    background: var(--surface-tertiary, rgba(0, 0, 0, 0.05));
+}
+
+.contextExpanded {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+}
+
+.currentPhase {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    padding: 0.5rem 0.75rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 0.375rem;
+    border-left: 3px solid var(--accent-primary);
+}
+
+.membersList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.memberItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: memberJoin 0.4s ease-out;
+}
+
+@keyframes memberJoin {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.memberAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.6875rem;
+    color: white;
+    flex-shrink: 0;
+}
+
+.memberDetails {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.memberRank {
+    font-size: 0.875rem;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+}
+
+.memberPoints {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+    animation: pointsUpdate 0.4s ease-out;
+}
+
+@keyframes pointsUpdate {
+    0% {
+        transform: scale(1.2);
+        background: rgba(99, 102, 241, 0.3);
+    }
+    100% {
+        transform: scale(1);
+        background: rgba(99, 102, 241, 0.1);
+    }
+}
+
+.infoSidebar .memberName {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.infoSidebar .memberRole {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Member not yet introduced - slightly faded */
+.memberNotIntroduced {
+    opacity: 0.5;
+}
+
+.memberNotIntroduced .memberAvatar {
+    filter: grayscale(0.5);
+}
+
+/* Member typing indicator */
+.memberTyping {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: auto;
+    padding-left: 0.5rem;
+}
+
+.memberTyping span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    animation: memberTypingPulse 1.4s infinite;
+}
+
+.memberTyping span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.memberTyping span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes memberTypingPulse {
+    0%, 60%, 100% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Message Row */
+.messageRow {
+    display: flex;
+    gap: 1rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+.messageRow.left {
+    justify-content: flex-start;
+}
+
+.messageRow.right {
+    justify-content: flex-end;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.avatar {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.messageContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    max-width: 65%;
+}
+
+.messageRow.right .messageContent {
+    align-items: flex-end;
+}
+
+.messageHeader {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0 0.25rem;
+}
+
+.messageRow.right .messageHeader {
+    justify-content: flex-end;
+}
+
+.messageName {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+}
+
+.messageRole {
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.messageBubble {
+    padding: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+    white-space: pre-line;
+    background: var(--bg-tertiary) !important;
+}
+
+/* Vote content styling */
+.voteContent {
+    font-size: 0.8125rem;
+    line-height: 1.8;
+}
+
+.voteRankingLine {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.125rem 0;
+}
+
+.bubbleLeft {
+    border: none;
+    border-left: 3px solid;
+    border-radius: 0.5rem;
+}
+
+.bubbleRight {
+    border: none;
+    border-right: 3px solid;
+    border-radius: 0.5rem;
+}
+
+/* Typing Indicator */
+.typingIndicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    margin-left: 4rem;
+}
+
+.typingDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    animation: typingAnimation 1.4s infinite;
+}
+
+.typingDot:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typingDot:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+
+    0%,
+    60%,
+    100% {
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-10px);
+    }
+}
+
+/* Floating Controls */
+.floatingControls {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 100;
+    padding: 0.5rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+}
+
+.controlButton {
+    background: transparent !important;
+    border: none !important;
+}
+
+.controlButton:hover {
+    background: var(--bg-hover) !important;
+}
+
+.controlButton.isPrimary {
+    color: var(--accent-primary);
+}
+
+.speedControl {
+    position: relative;
+}
+
+.speedMenu {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    margin-bottom: 0.5rem;
+    background: var(--surface-primary);
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    min-width: 140px;
+}
+
+.speedMenu button {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: background 0.2s;
+}
+
+.speedMenu button:hover {
+    background: var(--surface-secondary);
+}
+
+.speedMenu button.active {
+    background: var(--accent-primary);
+    color: white;
+    font-weight: 600;
+}
+
+/* Loading & Error */
+.loadingWrapper,
+.errorWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .infoSidebar {
+        width: 240px;
+    }
+}
+
+@media (max-width: 768px) {
+    .page {
+        height: calc(100vh - 2rem);
+        margin: -1rem;
+    }
+
+    .chatHeader {
+        padding: 1rem;
+    }
+
+    .infoSidebar {
+        display: none;
+    }
+
+    .chatContainer {
+        padding: 1rem;
+        gap: 1rem;
+        max-width: 100%;
+    }
+
+    .messageContent {
+        max-width: 75%;
+    }
+
+    .floatingControls {
+        bottom: 1rem;
+        right: 1rem;
+    }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        font-size: 0.75rem;
+    }
+
+    .messageBubble {
+        padding: 0.875rem;
+        font-size: 0.9375rem;
+    }
+}

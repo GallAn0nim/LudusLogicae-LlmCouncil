@@ -1,0 +1,110 @@
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-top: 1rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.searchWrapper {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 280px;
+}
+
+.searchWrapper > div:first-child {
+  flex: 1;
+}
+
+.filterGroup {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filterGroup > div {
+  min-width: 150px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+.loadingWrapper {
+  display: flex;
+  justify-content: center;
+  padding: 4rem 2rem;
+}
+
+.errorWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.errorText {
+  color: var(--error);
+  margin: 0;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.pageInfo {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.deleteConfirm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.deleteConfirm p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.deleteActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .filters {
+    flex-direction: column;
+  }
+
+  .searchWrapper {
+    width: 100%;
+  }
+
+  .filterGroup {
+    width: 100%;
+  }
+
+  .filterGroup > div {
+    flex: 1;
+    min-width: 0;
+  }
+}

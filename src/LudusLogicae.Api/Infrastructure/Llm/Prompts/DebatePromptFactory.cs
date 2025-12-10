@@ -71,13 +71,13 @@ Rules:
 - Output: Raw text only.
 
 --- Phase 6: Ballot (Borda) ---
-Description: Rank all members including yourself based on their Final Statements.
+Description: Rank all members including yourself based on their Final Statements. Your slot is provided in voterSlot.
 Rules:
 - Rank 1..{NMembers}; unique ranks; 1 = best
 - Must include all slots
 - Output: JSON ONLY.
 Input Schema:
-{""phase"": ""Ballot"", ""membersData"": [{""slot"": <int>, ""name"": ""<string>"", ""profession"": ""<string>"", ""stats"": {""wins"": <int>, ""losses"": <int>, ""points"": <int>}, ""currentStance"": ""<string>"", ""initialAnswer"": ""<string>""}, ...]}
+{""phase"": ""Ballot"", ""voterSlot"": <int>, ""membersData"": [{""slot"": <int>, ""name"": ""<string>"", ""profession"": ""<string>"", ""stats"": {""wins"": <int>, ""losses"": <int>, ""points"": <int>}, ""currentStance"": ""<string>"", ""initialAnswer"": ""<string>""}, ...]}
 Output Schema:
 {""ranks"": [{""slot"": <int>, ""rank"": <int>}, ...]}
 

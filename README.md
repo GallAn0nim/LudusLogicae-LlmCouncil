@@ -56,9 +56,68 @@ The debate system implements a 9-phase structured flow (with automatic transitio
 
 ## Stack
 - **Backend**: .NET 10 Web API with EF Core
+- **Frontend**: React 19 + TypeScript + Vite
 - **Data**: PostgreSQL with JSONB for state/results storage
 - **LLM Integration**: Provider-agnostic with fallback support (OpenAI, etc.)
-- **Deployment**: Docker + docker-compose (API + PostgreSQL)
+- **Deployment**: Docker + docker-compose (API + PostgreSQL + Frontend)
+
+## Frontend
+
+### Stack
+- **Framework**: React 19 + TypeScript
+- **Build Tool**: Vite 7
+- **Styling**: CSS Modules + CSS Custom Properties
+- **Animations**: anime.js
+- **Routing**: React Router v6
+- **Icons**: Lucide React
+
+### Architecture
+```
+frontend/
+├── public/
+│   └── favicon.svg          # LL logo favicon
+├── src/
+│   ├── api/                  # API client
+│   ├── components/
+│   │   ├── layout/           # Layout, NavButton, PageHeader
+│   │   └── ui/               # Reusable UI components
+│   ├── hooks/                # Custom React hooks
+│   ├── pages/
+│   │   ├── debates/          # Debate pages
+│   │   ├── members/          # Member pages
+│   │   ├── Dashboard.tsx     # Main dashboard
+│   │   └── LandingPage.tsx   # Entry gate animation
+│   ├── types/                # TypeScript types
+│   ├── App.tsx               # Root component & routing
+│   └── index.css             # Global styles & variables
+├── Dockerfile                # Production container
+├── nginx.conf                # Nginx configuration
+└── package.json
+```
+
+### Running Frontend
+
+#### Development
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Access: `http://localhost:3000`
+
+#### Production (Docker)
+```bash
+docker compose up frontend
+```
+Access: `http://localhost:3000`
+
+### Features
+- **Landing Page**: Animated wrought iron gate entrance
+- **Dashboard**: Stats overview, top performers, recent debates
+- **Members**: CRUD with search, filter, sort, introduction generation
+- **Debates**: Create wizard, detail view, animated replay mode
+- **Navigation**: Collapsible nav button with breadcrumbs
+- **Animations**: Scene-based loading overlays, page transitions
 
 ## Architecture
 
@@ -71,6 +130,9 @@ src/LudusLogicae.Api/
 │   └── Extensions/
 │       └── ServiceCollectionExtensions.cs
 ├── Features/
+│   ├── Dashboard/
+│   │   ├── Controllers/         # DashboardController
+│   │   └── Contracts/           # DashboardStatsResponse
 │   ├── Debates/
 │   │   ├── Controllers/         # DebatesController
 │   │   ├── Services/
@@ -103,14 +165,13 @@ src/LudusLogicae.Api/
 │   │   │   ├── IMetadataService.cs
 │   │   │   └── MetadataService.cs
 │   │   └── Contracts/           # MetadataInfoResponse, StackInfo
-│   └── Prompts/
-│       └── Services/            # DebatePromptFactory, MemberPromptFactory
 ├── Infrastructure/
 │   ├── Llm/
 │   │   ├── ILLMClient.cs
 │   │   ├── ProviderSelectingLLMClient.cs
 │   │   ├── Models/              # LLMRequest, LLMResponse, LLMMessage, etc.
-│   │   └── OpenAI/              # OpenAIResponsesClient, OpenAISettings
+│   │   ├── OpenAI/              # OpenAIResponsesClient, OpenAISettings
+│   │   └── Prompts/             # DebatePromptFactory, MemberPromptFactory
 │   └── Data/
 │       ├── AppDbContext.cs      # EF Core DbContext
 │       ├── Migrations/          # EF Core migrations
@@ -159,8 +220,13 @@ src/LudusLogicae.Api/
 - **Prompt Factories**: DebatePromptFactory and MemberPromptFactory for structured prompts
 - **Response Parsing**: Token tracking and usage monitoring
 
+#### Dashboard
+- **Platform Statistics**: Aggregated counts for members and debates
+- **Member Stats**: Total, active, benched, retired counts
+- **Debate Stats**: Total, ready, completed, failed counts
+
 #### Infrastructure
-- **Feature-Based Architecture**: Code organized by business feature (Debates, Members, Metadata)
+- **Feature-Based Architecture**: Code organized by business feature (Dashboard, Debates, Members, Metadata)
 - **Response Factory**: Centralized error handling and consistent API responses
 - **EF Core with PostgreSQL**: Full migration support with JSONB for complex state
 - **Introduction Caching**: MemberIntroductionCache for LLM response caching
@@ -190,6 +256,10 @@ src/LudusLogicae.Api/
 - `PUT /api/debates/{id}` — Update debate (only if in Created phase)
 - `DELETE /api/debates/{id}` — Delete debate (only if in Created phase)
 - `POST /api/debates/{id}/fully-run` — Execute complete debate flow
+
+### Dashboard
+- `GET /api/dashboard/stats` — Get platform statistics
+  - Returns: member counts (total, active, benched, retired) and debate counts (total, ready, completed, failed)
 
 ### Metadata
 - `GET /api/metadata/ping` — Liveness probe
@@ -237,6 +307,7 @@ docker compose up --build
 ```
 
 Access:
+- Frontend: `http://localhost:3000`
 - Swagger: `https://localhost:8443/swagger`
 - HTTP: `http://localhost:8080/swagger`
 - Health: `https://localhost:8443/health-check`

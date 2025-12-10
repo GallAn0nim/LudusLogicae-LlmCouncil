@@ -1,0 +1,201 @@
+.page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 1rem;
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.loadingWrapper,
+.errorWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+    gap: 1rem;
+    color: var(--text-secondary);
+}
+
+.topNav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.actionButtons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.content {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+    .content {
+        grid-template-columns: 2fr 1fr;
+    }
+}
+
+.mainColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.sideColumn {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Profile Header */
+.headerCard {
+    position: relative;
+    overflow: hidden;
+}
+
+.headerContent {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.profileHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .statsGrid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.statItem {
+    background: var(--bg-tertiary);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.statIcon {
+    color: var(--accent-primary);
+    opacity: 0.8;
+}
+
+.statValue {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.statLabel {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Info Sections */
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.infoItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.infoLabel {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.infoValue {
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.styleHint {
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* Status badge - left accent style */
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem 0.25rem 0.5rem;
+    border-left: 3px solid transparent;
+    border-radius: var(--radius-sm);
+    background: var(--bg-tertiary);
+}
+
+.statusActive {
+    color: var(--text-primary);
+    border-left-color: var(--success);
+}
+
+.statusBenched {
+    color: var(--text-primary);
+    border-left-color: var(--warning);
+}
+
+.statusRetired {
+    color: var(--text-primary);
+    border-left-color: var(--error);
+}
+
+.section {
+    border-left: 3px solid var(--accent-primary);
+}
+
+.deleteConfirm p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.introContent p {
+    margin: 0;
+}

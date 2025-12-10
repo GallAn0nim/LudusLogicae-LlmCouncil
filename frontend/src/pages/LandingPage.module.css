@@ -1,0 +1,248 @@
+.landing {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, #0a0a0b 0%, #111113 50%, #18181b 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  perspective: 1200px;
+}
+
+/* Fog layers */
+.fogContainer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.fogLayer {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(161, 161, 170, 0.1) 25%,
+    rgba(161, 161, 170, 0.15) 50%,
+    rgba(161, 161, 170, 0.1) 75%,
+    transparent 100%
+  );
+  filter: blur(20px);
+}
+
+.fogLayer:nth-child(1) {
+  top: 60%;
+}
+
+.fogLayer:nth-child(2) {
+  top: 70%;
+  opacity: 0.5;
+}
+
+.fogLayer:nth-child(3) {
+  top: 80%;
+  opacity: 0.3;
+}
+
+/* Flying pages */
+.pagesContainer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flyingPage {
+  position: absolute;
+  font-size: 2rem;
+  opacity: 0;
+  filter: drop-shadow(0 0 10px rgba(129, 140, 248, 0.3));
+}
+
+.flyingPage:nth-child(1) {
+  top: 20%;
+  left: 15%;
+}
+
+.flyingPage:nth-child(2) {
+  top: 30%;
+  right: 20%;
+}
+
+.flyingPage:nth-child(3) {
+  top: 60%;
+  left: 25%;
+}
+
+/* Gate structure */
+.gateContainer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 80vh;
+  max-height: 600px;
+  transform-style: preserve-3d;
+}
+
+.gatePillar {
+  width: 40px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    #27272a 0%,
+    #3f3f46 20%,
+    #27272a 40%,
+    #52525b 60%,
+    #27272a 100%
+  );
+  border-radius: 4px;
+  box-shadow:
+    inset -4px 0 8px rgba(0, 0, 0, 0.5),
+    4px 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.gatePillar.left {
+  border-radius: 4px 0 0 4px;
+}
+
+.gatePillar.right {
+  border-radius: 0 4px 4px 0;
+}
+
+.gateWrapper {
+  display: flex;
+  height: 90%;
+  transform-style: preserve-3d;
+}
+
+.gate {
+  width: 180px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    #1a1a1d 0%,
+    #27272a 30%,
+    #18181b 70%,
+    #111113 100%
+  );
+  border: 3px solid #3f3f46;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transform-style: preserve-3d;
+  box-shadow:
+    inset 0 0 30px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(0, 0, 0, 0.4);
+}
+
+.leftGate {
+  transform-origin: left center;
+  border-right: 1px solid #52525b;
+}
+
+.rightGate {
+  transform-origin: right center;
+  border-left: 1px solid #52525b;
+}
+
+/* Wrought iron pattern */
+.gatePattern {
+  position: absolute;
+  inset: 20px;
+  border: 2px solid #52525b;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 10px;
+}
+
+.gateBar {
+  width: 100%;
+  height: 2px;
+  background: #52525b;
+}
+
+.gateName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.3em;
+  text-shadow: 0 0 20px rgba(129, 140, 248, 0.5);
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  z-index: 1;
+}
+
+/* Enter prompt */
+.enterPrompt {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.enterPrompt span {
+  font-size: 1.125rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Lizard */
+.lizard {
+  position: absolute;
+  bottom: 15%;
+  left: 10%;
+  font-size: 1.5rem;
+  animation: lizardWalk 10s linear infinite;
+  opacity: 0.6;
+}
+
+@keyframes lizardWalk {
+  0% {
+    transform: translateX(0) scaleX(1);
+  }
+  45% {
+    transform: translateX(100px) scaleX(1);
+  }
+  50% {
+    transform: translateX(100px) scaleX(-1);
+  }
+  95% {
+    transform: translateX(0) scaleX(-1);
+  }
+  100% {
+    transform: translateX(0) scaleX(1);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .gate {
+    width: 140px;
+  }
+
+  .gatePillar {
+    width: 30px;
+  }
+
+  .gateName {
+    font-size: 1.25rem;
+  }
+}

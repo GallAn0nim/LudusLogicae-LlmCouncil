@@ -6,7 +6,7 @@ using LudusLogicae.Api.Infrastructure.Llm.Prompts;
 
 namespace LudusLogicae.Api.Features.Debates.Services.Orchestration.Phases;
 
-public record BallotPhaseInput(string Phase, object MembersData);
+public record BallotPhaseInput(string Phase, int VoterSlot, object MembersData);
 
 public sealed class BallotPhaseExecutor(
     ILlmResponseGenerator responseGenerator,
@@ -21,6 +21,7 @@ public sealed class BallotPhaseExecutor(
     {
         return new BallotPhaseInput(
             PhaseNames.Ballot,
+            participant.SlotIndex,
             state.BuildMemberDataForBallot());
     }
 
