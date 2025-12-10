@@ -1,4 +1,5 @@
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using LudusLogicae.Api.Core.Configuration;
@@ -77,17 +78,27 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddLlmServices(this IServiceCollection services)
     {
+        services.AddHttpClient("OpenAI", (serviceProvider, client) =>
+        {
+            var settings = serviceProvider.GetRequiredService<IOptions<OpenAISettings>>().Value;
+            client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
+        });
+
         services.AddSingleton<OpenAIClient>(serviceProvider =>
         {
             var settings = serviceProvider.GetRequiredService<IOptions<OpenAISettings>>().Value;
+            var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
             if (string.IsNullOrWhiteSpace(settings.ApiKey))
                 throw new InvalidOperationException(
                     "OpenAI API key is required. Please set the OpenAI:ApiKey configuration value.");
 
+            var httpClient = httpClientFactory.CreateClient("OpenAI");
+
             var options = new OpenAIClientOptions
             {
-                Endpoint = new Uri(settings.BaseUrl.TrimEnd('/') + "/")
+                Endpoint = new Uri(settings.BaseUrl.TrimEnd('/') + "/"),
+                Transport = new HttpClientPipelineTransport(httpClient)
             };
 
             return new OpenAIClient(
