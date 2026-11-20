@@ -395,4 +395,4 @@ Access:
 Issues and PRs welcome. Please keep changes small and focused.
 
 ## License
-TBD
+This project is licensed under the [MIT License](LICENSE).
