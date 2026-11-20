@@ -365,6 +365,9 @@ Dump the old database with a temporary PostgreSQL 16 container:
 docker run -d --name luduslogicae-pg16 -v luduslogicae-llmcouncil_db_data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres postgres:16-alpine
 ```
 ```bash
+until docker exec luduslogicae-pg16 pg_isready -U postgres; do sleep 1; done
+```
+```bash
 docker exec luduslogicae-pg16 pg_dump -U postgres --clean --if-exists ludus_logicae > backup.sql
 ```
 ```bash
