@@ -1,6 +1,5 @@
 #pragma warning disable OPENAI001
 
-using LudusLogicae.Api.Core.Configuration;
 using LudusLogicae.Api.Infrastructure.Llm.Abstractions;
 using LudusLogicae.Api.Infrastructure.Llm.Models;
 using Microsoft.Extensions.Options;
@@ -21,25 +20,20 @@ public sealed class OpenAIResponsesClient : ILLMClient
     private readonly ILogger<OpenAIResponsesClient> _logger;
     private readonly OpenAIClient _openAIClient;
     private readonly OpenAISettings _options;
-    private readonly LlmProvidersOptions _providers;
 
     public OpenAIResponsesClient(
         OpenAIClient openAIClient,
         IOptions<OpenAISettings> options,
-        IOptions<LlmProvidersOptions> providers,
         ILogger<OpenAIResponsesClient> logger)
     {
         _openAIClient = openAIClient;
         _options = options.Value;
-        _providers = providers.Value;
         _logger = logger;
     }
 
     public async Task<LLMResponse> SendAsync(LLMRequest request, CancellationToken cancellationToken = default)
     {
-        var model = string.IsNullOrWhiteSpace(request.Model)
-            ? _providers.GetDefaultModel(ProviderName) ?? throw new LLMClientException("No OpenAI model configured.", ProviderName)
-            : request.Model!;
+        var model = request.Model ?? string.Empty;
 
         var attempt = 0;
         var maxRetries = Math.Max(0, _options.MaxRetries);
@@ -89,6 +83,12 @@ public sealed class OpenAIResponsesClient : ILLMClient
 
         ResponseResult response = await responseClient.CreateResponseAsync(options, cancellationToken);
 
+        if (response.Status == ResponseStatus.Incomplete)
+        {
+            _logger.LogWarning("OpenAI response was incomplete ({Reason}) for model {Model}",
+                response.IncompleteStatusDetails?.Reason, model);
+        }
+
         return ParseResponse(response, model);
     }
 
@@ -114,6 +114,16 @@ public sealed class OpenAIResponsesClient : ILLMClient
         return string.Join("\n\n", parts);
     }
 
+    private static string GetFinishReason(ResponseResult response)
+    {
+        if (response.Status != ResponseStatus.Incomplete)
+        {
+            return "stop";
+        }
+
+        return response.IncompleteStatusDetails?.Reason?.ToString() ?? "incomplete";
+    }
+
     private static LLMResponse ParseResponse(ResponseResult response, string model)
     {
         return new LLMResponse
@@ -127,7 +137,7 @@ public sealed class OpenAIResponsesClient : ILLMClient
                 CompletionTokens = response.Usage?.OutputTokenCount ?? 0,
                 TotalTokens = response.Usage?.TotalTokenCount ?? 0
             },
-            FinishReason = "stop",
+            FinishReason = GetFinishReason(response),
             ProviderCreatedAt = DateTimeOffset.UtcNow
         };
     }

@@ -83,9 +83,14 @@ public sealed class LlmProvidersOptions : IValidatableObject
 
     public bool IsModelSupported(string providerName, string modelName)
     {
+        return FindSupportedModel(providerName, modelName) is not null;
+    }
+
+    public string? FindSupportedModel(string providerName, string modelName)
+    {
         var provider =
             Providers.FirstOrDefault(p => string.Equals(p.Name, providerName, StringComparison.OrdinalIgnoreCase));
-        return provider?.SupportedModels.Contains(modelName, StringComparer.OrdinalIgnoreCase) ?? false;
+        return provider?.SupportedModels.FirstOrDefault(m => string.Equals(m, modelName, StringComparison.OrdinalIgnoreCase));
     }
 }
 

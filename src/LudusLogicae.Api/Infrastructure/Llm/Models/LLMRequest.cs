@@ -1,6 +1,6 @@
 namespace LudusLogicae.Api.Infrastructure.Llm.Models;
 
-public sealed class LLMRequest
+public sealed record LLMRequest
 {
     public string? SystemPrompt { get; set; }
     public List<LLMMessage> Messages { get; set; } = new();

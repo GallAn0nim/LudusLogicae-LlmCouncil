@@ -35,9 +35,9 @@ public sealed class LlmProviderService : ILlmProviderService
 
     public string ValidateAndFallbackModel(string provider, string model)
     {
-        return _providersOptions.IsModelSupported(provider, model)
-            ? model
-            : _providersOptions.GetDefaultModel(provider) ?? model;
+        return _providersOptions.FindSupportedModel(provider, model)
+               ?? _providersOptions.GetDefaultModel(provider)
+               ?? model;
     }
 
     public bool IsProviderSupported(string provider)

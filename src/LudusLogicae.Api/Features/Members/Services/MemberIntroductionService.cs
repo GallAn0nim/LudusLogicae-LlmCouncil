@@ -46,7 +46,10 @@ public sealed class MemberIntroductionService(
 
             var freshIntroduction = await GenerateIntroductionFromLlmAsync(member, cancellationToken);
 
-            await cacheRepository.SaveOrUpdateAsync(member, freshIntroduction.Introduction, cancellationToken);
+            if (IsFromMemberModel(member, freshIntroduction))
+            {
+                await cacheRepository.SaveOrUpdateAsync(member, freshIntroduction.Introduction, cancellationToken);
+            }
 
             return ResponseFactory.Ok(freshIntroduction);
         }
@@ -62,6 +65,12 @@ public sealed class MemberIntroductionService(
             return ResponseFactory.InternalServerError<MemberIntroductionResponse>(
                 "Unexpected error while generating introduction.", ex);
         }
+    }
+
+    private static bool IsFromMemberModel(Member member, MemberIntroductionResponse introduction)
+    {
+        return string.Equals(introduction.Provider, member.Provider, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(introduction.Model, member.Model, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<MemberIntroductionResponse> GenerateIntroductionFromLlmAsync(

@@ -1,10 +1,8 @@
 using Anthropic;
 using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
-using LudusLogicae.Api.Core.Configuration;
 using LudusLogicae.Api.Infrastructure.Llm.Abstractions;
 using LudusLogicae.Api.Infrastructure.Llm.Models;
-using Microsoft.Extensions.Options;
 
 namespace LudusLogicae.Api.Infrastructure.Llm.Anthropic;
 
@@ -17,21 +15,16 @@ public sealed class AnthropicLLMClient : ILLMClient
 
     private readonly AnthropicClient _client;
     private readonly ILogger<AnthropicLLMClient> _logger;
-    private readonly LlmProvidersOptions _providers;
 
-    public AnthropicLLMClient(AnthropicClient client, IOptions<LlmProvidersOptions> providers,
-        ILogger<AnthropicLLMClient> logger)
+    public AnthropicLLMClient(AnthropicClient client, ILogger<AnthropicLLMClient> logger)
     {
         _client = client;
-        _providers = providers.Value;
         _logger = logger;
     }
 
     public async Task<LLMResponse> SendAsync(LLMRequest request, CancellationToken cancellationToken = default)
     {
-        var model = string.IsNullOrWhiteSpace(request.Model)
-            ? _providers.GetDefaultModel(ProviderName) ?? throw new LLMClientException("No Anthropic model configured.", ProviderName)
-            : request.Model!;
+        var model = request.Model ?? string.Empty;
 
         var system = string.Join("\n\n", new[] { request.SystemPrompt }
             .Concat(request.Messages.Where(m => m.Role == LLMRole.System).Select(m => m.Content))

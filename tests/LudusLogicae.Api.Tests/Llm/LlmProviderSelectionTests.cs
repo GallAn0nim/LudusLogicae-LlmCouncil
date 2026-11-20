@@ -68,6 +68,7 @@ public class LlmProviderSelectionTests
         Assert.Equal("OpenAI", providers.ValidateAndFallbackProvider("Unknown"));
         Assert.Equal("gpt-5-mini", providers.ValidateAndFallbackModel("OpenAI", "gpt-99"));
         Assert.Equal("gpt-5-nano", providers.ValidateAndFallbackModel("OpenAI", "gpt-5-nano"));
+        Assert.Equal("gpt-5-nano", providers.ValidateAndFallbackModel("OpenAI", "GPT-5-Nano"));
         Assert.NotNull(scope.ServiceProvider.GetKeyedService<ILLMClient>(ProviderSelectingLLMClient.Key("OpenAI")));
     }
 
@@ -111,11 +112,14 @@ public class LlmProviderSelectionTests
         });
         using var scope = sp.CreateScope();
 
-        await scope.ServiceProvider.GetRequiredService<ILLMClient>()
-            .SendAsync(new LLMRequest { Provider = "OpenAI", Model = "gpt-5-nano" });
+        var request = new LLMRequest { Provider = "OpenAI", Model = "gpt-5-nano" };
+
+        await scope.ServiceProvider.GetRequiredService<ILLMClient>().SendAsync(request);
 
         Assert.Equal("Anthropic", fake.Last!.Provider);
         Assert.Equal("claude-haiku-5-5", fake.Last.Model);
+        Assert.Equal("OpenAI", request.Provider);
+        Assert.Equal("gpt-5-nano", request.Model);
     }
 
     [Theory]

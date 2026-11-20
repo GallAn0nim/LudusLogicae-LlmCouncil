@@ -34,7 +34,6 @@ public sealed class ProviderSelectingLLMClient : ILLMClient
             }
 
             provider = fallback ?? provider;
-            request.Provider = provider;
         }
 
         if (string.IsNullOrWhiteSpace(provider))
@@ -52,8 +51,6 @@ public sealed class ProviderSelectingLLMClient : ILLMClient
                 provider, model);
         }
 
-        request.Model = model;
-
         var client = _services.GetKeyedService<ILLMClient>(Key(provider));
         if (client is null)
         {
@@ -61,6 +58,6 @@ public sealed class ProviderSelectingLLMClient : ILLMClient
             throw new LLMClientException($"LLM provider '{provider}' is not configured.", provider);
         }
 
-        return client.SendAsync(request, cancellationToken);
+        return client.SendAsync(request with { Provider = provider, Model = model }, cancellationToken);
     }
 }
