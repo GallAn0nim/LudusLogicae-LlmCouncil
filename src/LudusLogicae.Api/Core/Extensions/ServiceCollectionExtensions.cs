@@ -127,7 +127,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddOpenAIProvider(this IServiceCollection services)
     {
-        services.AddHttpClient("OpenAI", (serviceProvider, client) =>
+        services.AddHttpClient(OpenAIResponsesClient.ProviderName, (serviceProvider, client) =>
         {
             var settings = serviceProvider.GetRequiredService<IOptions<OpenAISettings>>().Value;
             client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
@@ -144,7 +144,7 @@ public static class ServiceCollectionExtensions
                     "OpenAI API key is required. Please set the OpenAI:ApiKey configuration value.");
             }
 
-            var httpClient = httpClientFactory.CreateClient("OpenAI");
+            var httpClient = httpClientFactory.CreateClient(OpenAIResponsesClient.ProviderName);
 
             var options = new OpenAIClientOptions
             {
@@ -158,7 +158,7 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddSingleton<OpenAIResponsesClient>();
-        services.AddKeyedSingleton<ILLMClient, ResilientOpenAIClient>(ProviderSelectingLLMClient.Key("OpenAI"));
+        services.AddKeyedSingleton<ILLMClient, ResilientOpenAIClient>(ProviderSelectingLLMClient.Key(OpenAIResponsesClient.ProviderName));
 
         return services;
     }

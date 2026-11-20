@@ -118,6 +118,27 @@ public class LlmProviderSelectionTests
         Assert.Equal("claude-haiku-5-5", fake.Last.Model);
     }
 
+    [Theory]
+    [InlineData("Anthropic", "gpt-5")]
+    [InlineData("", "")]
+    [InlineData(null, null)]
+    public async Task Router_ReplacesModelNotSupportedByTheProvider(string? provider, string? model)
+    {
+        var fake = new RecordingClient();
+        using var sp = Build(null, extra: s =>
+        {
+            s.AddKeyedSingleton<ILLMClient>(ProviderSelectingLLMClient.Key("Anthropic"), fake);
+            s.Configure<LlmProvidersOptions>(o => o.DefaultProvider = "Anthropic");
+        });
+        using var scope = sp.CreateScope();
+
+        await scope.ServiceProvider.GetRequiredService<ILLMClient>()
+            .SendAsync(new LLMRequest { Provider = provider, Model = model });
+
+        Assert.Equal("Anthropic", fake.Last!.Provider);
+        Assert.Equal("claude-haiku-5-5", fake.Last.Model);
+    }
+
     private sealed class RecordingClient : ILLMClient
     {
         public LLMRequest? Last { get; private set; }

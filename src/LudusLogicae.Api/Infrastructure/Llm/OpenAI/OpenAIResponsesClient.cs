@@ -1,5 +1,6 @@
 #pragma warning disable OPENAI001
 
+using LudusLogicae.Api.Core.Configuration;
 using LudusLogicae.Api.Infrastructure.Llm.Abstractions;
 using LudusLogicae.Api.Infrastructure.Llm.Models;
 using Microsoft.Extensions.Options;
@@ -10,7 +11,7 @@ namespace LudusLogicae.Api.Infrastructure.Llm.OpenAI;
 
 public sealed class OpenAIResponsesClient : ILLMClient
 {
-    private const string ProviderName = "OpenAI";
+    public const string ProviderName = "OpenAI";
     private const int ReasoningHeadroomTokens = 4000;
     private const string NanoModelSuffix = "-nano";
 
@@ -20,20 +21,25 @@ public sealed class OpenAIResponsesClient : ILLMClient
     private readonly ILogger<OpenAIResponsesClient> _logger;
     private readonly OpenAIClient _openAIClient;
     private readonly OpenAISettings _options;
+    private readonly LlmProvidersOptions _providers;
 
     public OpenAIResponsesClient(
         OpenAIClient openAIClient,
         IOptions<OpenAISettings> options,
+        IOptions<LlmProvidersOptions> providers,
         ILogger<OpenAIResponsesClient> logger)
     {
         _openAIClient = openAIClient;
         _options = options.Value;
+        _providers = providers.Value;
         _logger = logger;
     }
 
     public async Task<LLMResponse> SendAsync(LLMRequest request, CancellationToken cancellationToken = default)
     {
-        var model = string.IsNullOrWhiteSpace(request.Model) ? _options.DefaultModel : request.Model!;
+        var model = string.IsNullOrWhiteSpace(request.Model)
+            ? _providers.GetDefaultModel(ProviderName) ?? throw new LLMClientException("No OpenAI model configured.", ProviderName)
+            : request.Model!;
 
         var attempt = 0;
         var maxRetries = Math.Max(0, _options.MaxRetries);

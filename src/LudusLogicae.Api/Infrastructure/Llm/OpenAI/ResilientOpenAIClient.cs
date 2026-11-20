@@ -54,7 +54,7 @@ public sealed class ResilientOpenAIClient : ILLMClient
                 "Circuit breaker is open. LLM provider appears to be unavailable.");
             throw new LLMClientException(
                 "LLM service is temporarily unavailable due to repeated failures. Please try again later.",
-                "OpenAI",
+                OpenAIResponsesClient.ProviderName,
                 inner: ex);
         }
     }

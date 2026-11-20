@@ -15,7 +15,6 @@ public sealed class OpenAISettings : IValidatableObject
     public string BaseUrl { get; set; } = "https://api.openai.com/v1";
 
     public string? OrganizationId { get; set; }
-    public string DefaultModel { get; set; } = "gpt-5";
     public int TimeoutSeconds { get; set; } = 60;
     public int MaxRetries { get; set; } = 3;
     public int RetryBaseDelayMs { get; set; } = 250;
@@ -48,13 +47,6 @@ public sealed class OpenAISettings : IValidatableObject
             yield return new ValidationResult(
                 $"RetryBaseDelayMs must be between {MinRetryDelay} and {MaxRetryDelay}.",
                 [nameof(RetryBaseDelayMs)]);
-        }
-
-        if (string.IsNullOrWhiteSpace(DefaultModel))
-        {
-            yield return new ValidationResult(
-                "DefaultModel is required.",
-                [nameof(DefaultModel)]);
         }
     }
 }

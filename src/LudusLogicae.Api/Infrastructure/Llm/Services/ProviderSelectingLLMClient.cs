@@ -31,7 +31,6 @@ public sealed class ProviderSelectingLLMClient : ILLMClient
             if (!string.IsNullOrWhiteSpace(provider) && fallback is not null)
             {
                 _logger.LogWarning("LLM provider {Provider} unavailable, using default {Default}", provider, fallback);
-                request.Model = _providerService.ValidateAndFallbackModel(fallback, request.Model ?? string.Empty);
             }
 
             provider = fallback ?? provider;
@@ -45,6 +44,15 @@ public sealed class ProviderSelectingLLMClient : ILLMClient
                 "No LLM provider is configured. Set an API key for at least one provider (e.g. OpenAI:ApiKey).",
                 "none");
         }
+
+        var model = _providerService.ValidateAndFallbackModel(provider, request.Model ?? string.Empty);
+        if (!string.IsNullOrWhiteSpace(request.Model) && model != request.Model)
+        {
+            _logger.LogWarning("Model {Model} is not supported by {Provider}, using {Fallback}", request.Model,
+                provider, model);
+        }
+
+        request.Model = model;
 
         var client = _services.GetKeyedService<ILLMClient>(Key(provider));
         if (client is null)
