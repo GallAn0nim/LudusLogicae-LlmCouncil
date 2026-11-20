@@ -45,6 +45,7 @@ public sealed class OpenAIResponsesClient : ILLMClient
         Exception? lastEx = null;
 
         while (attempt <= maxRetries)
+        {
             try
             {
                 return await strategy.ExecuteAsync(_openAIClient, request, cancellationToken);
@@ -63,6 +64,7 @@ public sealed class OpenAIResponsesClient : ILLMClient
                     $"Failed to get response from OpenAI for model {model} after {maxRetries + 1} attempts.", "OpenAI",
                     inner: ex);
             }
+        }
 
         throw new LLMClientException("Unexpected flow in SendAsync", "OpenAI");
     }
@@ -70,8 +72,12 @@ public sealed class OpenAIResponsesClient : ILLMClient
     private IOpenAIModelStrategy GetStrategy(string model)
     {
         foreach (var strategy in _strategies)
+        {
             if (strategy.CanHandle(model))
+            {
                 return strategy;
+            }
+        }
 
         throw new InvalidOperationException($"No strategy found for model: {model}");
     }

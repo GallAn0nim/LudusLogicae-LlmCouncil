@@ -2,6 +2,14 @@ namespace LudusLogicae.Api.Features.Debates.Models;
 
 public sealed record RawPhaseResult(int Slot, string RawText);
 
+public sealed record PhaseRequest<TInput>(
+    int SlotIndex,
+    string Provider,
+    string Model,
+    double Temperature,
+    string SystemPrompt,
+    TInput Input);
+
 public sealed class DebateRound
 {
     public int RoundNumber { get; init; }

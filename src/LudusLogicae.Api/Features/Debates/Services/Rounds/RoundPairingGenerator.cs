@@ -8,6 +8,11 @@ public sealed class RoundPairingGenerator
     public RoundPairing[] GeneratePairingsForRound(int roundNumber, List<DebateParticipant> participants)
     {
         var slots = participants.Select(p => p.SlotIndex).ToList();
+        if (slots.Count < 2)
+        {
+            return [];
+        }
+
         var offset = CalculateOffset(roundNumber, slots.Count);
 
         return slots
@@ -18,7 +23,7 @@ public sealed class RoundPairingGenerator
 
     private static int CalculateOffset(int roundNumber, int participantCount)
     {
-        return (roundNumber - 1) % participantCount + 1;
+        return (roundNumber - 1) % (participantCount - 1) + 1;
     }
 
     private static RoundPairing CreatePairing(int fromSlot, List<int> slots, int offset)

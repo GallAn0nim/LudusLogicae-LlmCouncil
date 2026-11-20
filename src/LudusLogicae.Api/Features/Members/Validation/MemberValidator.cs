@@ -18,9 +18,11 @@ public sealed class MemberValidator : IMemberValidator
 
     private static ValidationResult ValidateBusinessRules(double temperature)
     {
-        if (temperature < MemberConstants.MinTemperature || temperature > MemberConstants.MaxTemperature)
+        if (!(temperature >= MemberConstants.MinTemperature && temperature <= MemberConstants.MaxTemperature))
+        {
             return ValidationResult.Failure(
                 $"Temperature must be between {MemberConstants.MinTemperature} and {MemberConstants.MaxTemperature}.");
+        }
 
         return ValidationResult.Success();
     }

@@ -32,31 +32,31 @@ public sealed class RoundAnswerPhaseExecutor(
         return await ExecutePhaseAsync(debate, participants, state, ct);
     }
 
-    protected override
-        List<(int SlotIndex, string Model, double Temperature, string SystemPrompt, RoundAnswerPhaseInput Input)>
-        BuildRequestInputs(
-            Debate debate,
-            List<DebateParticipant> participants,
-            DebateState state)
+    protected override List<PhaseRequest<RoundAnswerPhaseInput>> BuildRequestInputs(
+        Debate debate,
+        List<DebateParticipant> participants,
+        DebateState state)
     {
         return participants
             .Select(p =>
             {
                 var questionToMe = _questions.FirstOrDefault(q => q.ToSlot == p.SlotIndex);
                 if (questionToMe == null)
-                    return default;
+                {
+                    return null;
+                }
 
                 var askerName = participants.First(e => e.SlotIndex == questionToMe.FromSlot).Name;
 
-                return (
+                return new PhaseRequest<RoundAnswerPhaseInput>(
                     p.SlotIndex,
+                    p.Provider,
                     p.Model,
                     p.Temperature,
-                    SystemPrompt: GetSystemPromptForParticipant(state, p, debate.NMembers),
-                    Input: CreatePhaseInput(debate, p, state, questionToMe, askerName)
-                );
+                    GetSystemPromptForParticipant(state, p, debate.NMembers),
+                    CreatePhaseInput(debate, p, state, questionToMe, askerName));
             })
-            .Where(r => r != default)
+            .OfType<PhaseRequest<RoundAnswerPhaseInput>>()
             .ToList();
     }
 

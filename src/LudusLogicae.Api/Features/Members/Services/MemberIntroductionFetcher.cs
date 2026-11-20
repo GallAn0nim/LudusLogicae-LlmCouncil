@@ -11,7 +11,10 @@ public sealed class MemberIntroductionFetcher(
         List<Member> members,
         CancellationToken cancellationToken)
     {
-        if (!members.Any()) return new Dictionary<Guid, string>();
+        if (!members.Any())
+        {
+            return new Dictionary<Guid, string>();
+        }
 
         var cachedIntros = await cacheRepository.GetCachedIntroductionsByMembersAsync(members, cancellationToken);
         var cachedDict = cachedIntros.ToDictionary(c => c.MemberId, c => c.Introduction);
@@ -19,11 +22,13 @@ public sealed class MemberIntroductionFetcher(
         var missingMembers = members.Where(m => !cachedDict.ContainsKey(m.Id)).ToList();
 
         if (missingMembers.Any())
+        {
             foreach (var member in missingMembers)
             {
                 var intro = await FetchSingleIntroductionAsync(member.Id, cancellationToken);
                 cachedDict[member.Id] = intro;
             }
+        }
 
         return cachedDict;
     }

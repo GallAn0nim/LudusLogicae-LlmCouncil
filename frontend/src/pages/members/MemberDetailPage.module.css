@@ -64,7 +64,6 @@
     gap: 2rem;
 }
 
-/* Profile Header */
 .headerCard {
     position: relative;
     overflow: hidden;
@@ -125,7 +124,6 @@
     letter-spacing: 0.05em;
 }
 
-/* Info Sections */
 .sectionTitle {
     display: flex;
     align-items: center;
@@ -161,7 +159,6 @@
     line-height: 1.6;
 }
 
-/* Status badge - left accent style */
 .statusBadge {
     display: inline-flex;
     align-items: center;

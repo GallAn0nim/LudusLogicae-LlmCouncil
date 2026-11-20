@@ -12,7 +12,7 @@ public enum DebateOperationType
 
 public static class DebateValidationHelper
 {
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope)? ValidateEditability<T>(
+    public static ServiceResult<T>? ValidateEditability<T>(
          Debate debate,
          IDebateValidator validator,
          DebateOperationType operation)

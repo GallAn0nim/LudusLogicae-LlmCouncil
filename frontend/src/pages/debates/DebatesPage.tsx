@@ -157,7 +157,6 @@ export function DebatesPage() {
             ))}
           </div>
 
-          {/* Pagination adapted for list response (no total count available) */}
           {(data.length === (query.pageSize || 12) || (query.page || 1) > 1) && (
             <div className={styles.pagination}>
               <Button

@@ -18,7 +18,10 @@ public sealed class MemberStatsUpdater(AppDbContext dbContext) : IMemberStatsUpd
         foreach (var participant in participants)
         {
             var member = members.FirstOrDefault(m => m.Id == participant.MemberId);
-            if (member == null) continue;
+            if (member == null)
+            {
+                continue;
+            }
 
             UpdateMemberDebateStats(member, participant, state);
         }
@@ -42,7 +45,10 @@ public sealed class MemberStatsUpdater(AppDbContext dbContext) : IMemberStatsUpd
         UpdateBasicDebateStats(member);
 
         var result = FindMemberResult(state, participant.SlotIndex);
-        if (result == null) return;
+        if (result == null)
+        {
+            return;
+        }
 
         var pointChange = CalculatePointChange(result.Rank, state.MemberCount, member);
         ApplyPointChange(member, pointChange);

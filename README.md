@@ -55,10 +55,10 @@ The debate system implements a 9-phase structured flow (with automatic transitio
 - Error details logged for debugging
 
 ## Stack
-- **Backend**: .NET 10 Web API with EF Core
+- **Backend**: .NET 11 Web API with EF Core 11
 - **Frontend**: React 19 + TypeScript + Vite
-- **Data**: PostgreSQL with JSONB for state/results storage
-- **LLM Integration**: Provider-agnostic with fallback support (OpenAI, etc.)
+- **Data**: PostgreSQL 19 with JSONB for state/results storage
+- **LLM Integration**: Anthropic (default, Claude Sonnet 5.5) and OpenAI (GPT-5), both with medium reasoning effort
 - **Deployment**: Docker + docker-compose (API + PostgreSQL + Frontend)
 
 ## Frontend
@@ -126,9 +126,11 @@ Access: `http://localhost:3000`
 src/LudusLogicae.Api/
 ├── Core/
 │   ├── Common/
-│   │   └── Constants/           # DebateConstants, MemberConstants, PaginationConstants
-│   └── Extensions/
-│       └── ServiceCollectionExtensions.cs
+│   │   └── Constants/           # DebateConstants, MemberConstants, PaginationConstants, PhaseNames
+│   ├── Configuration/           # DatabaseOptions, HealthCheckOptions, LlmProvidersOptions
+│   ├── Data/                    # BaseRepository
+│   ├── Extensions/              # ServiceCollectionExtensions, ValidationExtensions
+│   └── Middleware/              # GlobalExceptionHandler
 ├── Features/
 │   ├── Dashboard/
 │   │   ├── Controllers/         # DashboardController
@@ -139,8 +141,10 @@ src/LudusLogicae.Api/
 │   │   │   ├── IDebateService.cs
 │   │   │   ├── DebateService.cs
 │   │   │   ├── Data/            # DebateRepository (DB queries & state persistence)
-│   │   │   ├── Orchestration/   # DebateOrchestrator, DebateStepExecutor (phase execution)
-│   │   │   └── Results/         # DebateResultCalculator, DebateWinnerBuilder
+│   │   │   ├── Orchestration/   # DebateOrchestrator, DebateStepExecutor, Phases/ (phase executors)
+│   │   │   ├── Processing/      # DebateResponseParser, LlmResponseGenerator
+│   │   │   ├── Results/         # DebateResultCalculator, DebateWinnerBuilder
+│   │   │   └── Rounds/          # RoundPairingGenerator
 │   │   ├── Entities/            # Debate, DebateParticipant, DebatePhase
 │   │   ├── Contracts/           # CreateDebateRequest, UpdateDebateRequest, DebateResponse, etc.
 │   │   ├── Validation/          # DebateValidator, DebateValidationHelper
@@ -167,29 +171,51 @@ src/LudusLogicae.Api/
 │   │   └── Contracts/           # MetadataInfoResponse, StackInfo
 ├── Infrastructure/
 │   ├── Llm/
-│   │   ├── ILLMClient.cs
-│   │   ├── ProviderSelectingLLMClient.cs
+│   │   ├── Abstractions/        # ILLMClient, LLMClientException
+│   │   ├── Anthropic/           # AnthropicLLMClient, AnthropicSettings
+│   │   ├── OpenAI/              # OpenAIResponsesClient, ResilientOpenAIClient, OpenAISettings
+│   │   │   └── Strategies/      # Gpt4ModelStrategy, Gpt5ModelStrategy
+│   │   ├── Services/            # ProviderSelectingLLMClient, LlmProviderService
 │   │   ├── Models/              # LLMRequest, LLMResponse, LLMMessage, etc.
-│   │   ├── OpenAI/              # OpenAIResponsesClient, OpenAISettings
 │   │   └── Prompts/             # DebatePromptFactory, MemberPromptFactory
 │   └── Data/
-│       ├── AppDbContext.cs      # EF Core DbContext
-│       ├── Migrations/          # EF Core migrations
-│       └── SeedData/            # Initial member seed data
+│       └── AppDbContext.cs      # EF Core DbContext
+├── Migrations/                  # EF Core migrations, including member seed data
 └── Shared/
-    ├── Contracts/               # LudusLogicaeResponse, ApiResponse, ResponseFactory
-    └── Constants/               # Shared constants
+    └── Contracts/               # LudusLogicaeResponse, ResponseFactory, ServiceResult
+
+tests/LudusLogicae.Api.Tests/    # xUnit tests: debates, LLM provider selection, validation
 ```
 
-### Code Quality Standards
-- **One Class Per File**: Each class/interface in its own file for better navigation
-- **Separated Interfaces**: All interfaces separated from implementations
+### Code Style
+The golden rule: the best code is the simplest code that correctly solves the problem, explains itself without comments, and stays easy to maintain.
+
+- **KISS, DRY, YAGNI**: Straightforward solutions, no duplicated business logic, nothing built for hypothetical needs
+- **Pragmatic SOLID**: No excessive interfaces, inheritance, or abstraction layers
+- **No Comments**: No inline, block, or XML documentation comments; names carry the meaning
+- **Small, Focused Methods**: One clear purpose each, with early returns instead of nesting
+- **Explicit Over Clever**: No magic values, hidden side effects, or overly complex expressions
+- **No Tuples**: Use named types or separate values instead
+- **Always Use Braces**: Every block is wrapped in braces, even one-liners, with braces on their own lines in C#
+- **Minimal Changes**: Modify only what is necessary; no unrelated refactoring
+- **One Class Per File**: Each class/interface in its own file
 - **No Region Tags**: Code flows naturally without artificial sections
-- **No Inline Comments**: Self-documenting code with clear method names
-- **XML Documentation**: Comprehensive API documentation on controllers and public APIs
-- **No Void Methods**: All repository/service methods return values for better testability
-- **DRY Principle**: Reusable helper methods and factories
-- **Clean Formatting**: Consistent code style via `dotnet format`
+
+```csharp
+public ActionResult<RandomMazeResponse> Random(int? size)
+{
+    var result = service.GenerateRandomMaze(size);
+
+    if (result.IsFailure)
+    {
+        return this.Invalid(result.Error);
+    }
+
+    return Ok(result.Value);
+}
+```
+
+The frontend enforces braces with the ESLint `curly: all` rule.
 
 ### Implemented Components
 
@@ -214,9 +240,11 @@ src/LudusLogicae.Api/
 - **Participant Management**: Track member participation with stats updates
 
 #### LLM Integration
-- **Provider-Agnostic Design**: Support for multiple LLM providers
-- **Fallback Support**: Automatic fallback when provider/model unavailable
-- **OpenAI Implementation**: OpenAIResponsesClient with configurable models
+- **Provider-Agnostic Design**: `ProviderSelectingLLMClient` routes each request to the member's provider
+- **Fallback Support**: Unsupported models fall back to the provider's default model
+- **Anthropic (default provider)**: `claude-sonnet-5-5` by default, medium effort; Haiku 5.5 and Opus 5.5 also supported
+- **OpenAI**: `gpt-5` by default with medium reasoning effort, via the Responses API; GPT-4.1 and GPT-5 mini/nano also supported
+- **Resilience**: OpenAI calls use exponential-backoff retries and a circuit breaker
 - **Prompt Factories**: DebatePromptFactory and MemberPromptFactory for structured prompts
 - **Response Parsing**: Token tracking and usage monitoring
 
@@ -297,10 +325,11 @@ src/LudusLogicae.Api/
 ### Using Docker Compose
 ```powershell
 # From repo root
-# 1. Copy .env.example to .env and configure your OpenAI API key
+# 1. Copy .env.example to .env
 cp .env.example .env
 
-# 2. Edit .env and set your OPENAI_API_KEY
+# 2. Edit .env and set ANTHROPIC_API_KEY (default provider, claude-sonnet-5-5) and/or OPENAI_API_KEY.
+#    Both optional: with neither, the app runs but AI features are disabled.
 
 # 3. Start the services
 docker compose up --build
@@ -311,6 +340,17 @@ Access:
 - Swagger: `https://localhost:8443/swagger`
 - HTTP: `http://localhost:8080/swagger`
 - Health: `https://localhost:8443/health-check`
+
+### Running Tests
+```bash
+dotnet test
+```
+
+### Linting the Frontend
+```bash
+cd frontend
+npm run lint
+```
 
 ### Using Rider
 1. Run → Edit Configurations → "+" → Docker Compose
@@ -325,15 +365,22 @@ Access:
 - **v1**: EF Core, debate engine, member management, LLM integration
 - **v2**: Feature-based architecture, debate flow with 9 phases, Borda voting, member stats tracking
 - **v2.1**: Code cleanup, refactoring, and quality improvements
+- **v2.2**: Anthropic provider, Sonnet 5.5 and GPT-5 defaults with medium reasoning, code style pass
 
-## Recent Major Updates (v2.1)
+## Recent Major Updates (v2.2)
+
+- **Anthropic Provider**: Added as the default provider, using Claude Sonnet 5.5 with medium effort
+- **OpenAI Defaults**: GPT-5 with medium reasoning effort replaces GPT-4.1 mini
+- **Code Style Pass**: Removed all comments, wrapped every block in braces, and replaced tuples in tests with named values
+
+## Earlier Updates (v2.1)
 
 ### Code Quality & Organization
 - **Separated Files**: Each class/interface in its own file
   - Split multi-class contract files (DebateContracts, ApiResponse)
   - Separated all interfaces from implementations
 - **Removed Clutter**: Eliminated all region tags and inline comments
-- **Clean Code**: Self-documenting code with comprehensive XML documentation
+- **Clean Code**: Self-documenting code without comments
 - **Consistent Formatting**: Applied `dotnet format` across entire codebase
 
 ### Architecture Improvements

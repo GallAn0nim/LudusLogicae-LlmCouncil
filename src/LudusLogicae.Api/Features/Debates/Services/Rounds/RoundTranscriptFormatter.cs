@@ -32,7 +32,10 @@ public sealed class RoundTranscriptFormatter
         transcript.AppendLine($"Q ({askerName} -> {targetName}): {question.Text}");
 
         var answer = answers.FirstOrDefault(a => a.Slot == question.ToSlot);
-        if (answer != null) transcript.AppendLine($"A ({targetName}): {answer.Text}");
+        if (answer != null)
+        {
+            transcript.AppendLine($"A ({targetName}): {answer.Text}");
+        }
     }
 
     private static string GetParticipantName(List<DebateParticipant> participants, int slot)

@@ -15,26 +15,34 @@ public sealed class DebateExecutionService(
     IDebateStateManager stateManager,
     IDebateCompletionService completionService) : IDebateExecutionService
 {
-    public async Task<(int StatusCode, LudusLogicaeResponse<DebateState> Envelope)> ExecuteDebateAsync(
+    public async Task<ServiceResult<DebateState>> ExecuteDebateAsync(
         Guid id,
         CancellationToken cancellationToken)
     {
         var debate = await repository.GetByIdAsync(id, cancellationToken, false);
-        if (debate is null) return debate.ToNotFoundResponse<Debate, DebateState>("Debate", id);
+        if (debate is null)
+        {
+            return debate.ToNotFoundResponse<Debate, DebateState>("Debate", id);
+        }
 
         var editableError = DebateValidationHelper.ValidateEditability<DebateState>(
             debate,
             validator,
             DebateOperationType.Start);
-        if (editableError != null) return editableError.Value;
+        if (editableError is not null)
+        {
+            return editableError;
+        }
 
         var participants = await repository.GetParticipantsByDebateIdAsync(id, cancellationToken);
         if (participants.Count == 0)
+        {
             return ResponseFactory.BadRequest<DebateState>(
                 ErrorMessages.MissingRequired("Members", "none are assigned to this debate"));
+        }
 
         var memberIds = participants.Select(e => e.MemberId).ToList();
-        var (state, _) = await completionService.InitializeDebateAsync(
+        var state = await completionService.InitializeDebateAsync(
             debate,
             participants,
             memberIds,

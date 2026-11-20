@@ -1,12 +1,11 @@
 .page {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 4rem); /* Account for main-content padding */
-    margin: -2rem; /* Offset the main-content padding */
+    height: calc(100vh - 4rem);
+    margin: -2rem;
     background: var(--surface-primary);
 }
 
-/* Chat Header */
 .chatHeader {
     display: flex;
     align-items: center;
@@ -23,14 +22,12 @@
     color: var(--text-primary);
 }
 
-/* Main Content Layout */
 .mainContent {
     flex: 1;
     display: flex;
     overflow: hidden;
 }
 
-/* Chat Container */
 .chatContainer {
     flex: 1;
     overflow-y: auto;
@@ -43,7 +40,6 @@
     width: 100%;
 }
 
-/* Info Sidebar */
 .infoSidebar {
     width: 280px;
     flex-shrink: 0;
@@ -216,7 +212,6 @@
     text-overflow: ellipsis;
 }
 
-/* Member not yet introduced - slightly faded */
 .memberNotIntroduced {
     opacity: 0.5;
 }
@@ -225,7 +220,6 @@
     filter: grayscale(0.5);
 }
 
-/* Member typing indicator */
 .memberTyping {
     display: flex;
     align-items: center;
@@ -261,7 +255,6 @@
     }
 }
 
-/* Message Row */
 .messageRow {
     display: flex;
     gap: 1rem;
@@ -344,7 +337,6 @@
     background: var(--bg-tertiary) !important;
 }
 
-/* Vote content styling */
 .voteContent {
     font-size: 0.8125rem;
     line-height: 1.8;
@@ -369,7 +361,6 @@
     border-radius: 0.5rem;
 }
 
-/* Typing Indicator */
 .typingIndicator {
     display: flex;
     align-items: center;
@@ -409,7 +400,6 @@
     }
 }
 
-/* Floating Controls */
 .floatingControls {
     position: fixed;
     bottom: 2rem;
@@ -476,7 +466,6 @@
     font-weight: 600;
 }
 
-/* Loading & Error */
 .loadingWrapper,
 .errorWrapper {
     display: flex;
@@ -487,7 +476,6 @@
     gap: 1rem;
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
     .infoSidebar {
         width: 240px;

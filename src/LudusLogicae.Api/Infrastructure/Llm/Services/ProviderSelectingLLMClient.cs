@@ -1,34 +1,58 @@
 using LudusLogicae.Api.Infrastructure.Llm.Abstractions;
 using LudusLogicae.Api.Infrastructure.Llm.Models;
-using LudusLogicae.Api.Infrastructure.Llm.OpenAI;
 
 namespace LudusLogicae.Api.Infrastructure.Llm.Services;
 
 public sealed class ProviderSelectingLLMClient : ILLMClient
 {
-    private readonly string _configuredProvider;
     private readonly ILogger<ProviderSelectingLLMClient> _logger;
+    private readonly ILlmProviderService _providerService;
     private readonly IServiceProvider _services;
 
-    public ProviderSelectingLLMClient(IServiceProvider services, IConfiguration configuration,
+    public ProviderSelectingLLMClient(IServiceProvider services, ILlmProviderService providerService,
         ILogger<ProviderSelectingLLMClient> logger)
     {
         _services = services;
+        _providerService = providerService;
         _logger = logger;
-        _configuredProvider = (configuration["Llm:Provider"] ?? "OpenAI").Trim();
+    }
+
+    public static string Key(string provider)
+    {
+        return provider.Trim().ToLowerInvariant();
     }
 
     public Task<LLMResponse> SendAsync(LLMRequest request, CancellationToken cancellationToken = default)
     {
-        var provider = string.IsNullOrWhiteSpace(request.Provider) ? _configuredProvider : request.Provider!;
-        switch (provider.ToLowerInvariant())
+        var provider = request.Provider;
+        if (string.IsNullOrWhiteSpace(provider) || !_providerService.IsProviderSupported(provider))
         {
-            case "openai":
-                var openai = _services.GetRequiredService<OpenAIResponsesClient>();
-                return openai.SendAsync(request, cancellationToken);
-            default:
-                _logger.LogError("Unknown LLM provider: {Provider}", provider);
-                throw new LLMClientException($"Unknown LLM provider: '{provider}'", provider);
+            var fallback = _providerService.GetDefaultProvider();
+            if (!string.IsNullOrWhiteSpace(provider) && fallback is not null)
+            {
+                _logger.LogWarning("LLM provider {Provider} unavailable, using default {Default}", provider, fallback);
+                request.Model = _providerService.ValidateAndFallbackModel(fallback, request.Model ?? string.Empty);
+            }
+
+            provider = fallback ?? provider;
+            request.Provider = provider;
         }
+
+        if (string.IsNullOrWhiteSpace(provider))
+        {
+            _logger.LogError("No LLM provider is configured");
+            throw new LLMClientException(
+                "No LLM provider is configured. Set an API key for at least one provider (e.g. OpenAI:ApiKey).",
+                "none");
+        }
+
+        var client = _services.GetKeyedService<ILLMClient>(Key(provider));
+        if (client is null)
+        {
+            _logger.LogError("LLM provider not configured: {Provider}", provider);
+            throw new LLMClientException($"LLM provider '{provider}' is not configured.", provider);
+        }
+
+        return client.SendAsync(request, cancellationToken);
     }
 }

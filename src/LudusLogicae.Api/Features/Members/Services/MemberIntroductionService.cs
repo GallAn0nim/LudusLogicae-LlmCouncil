@@ -16,14 +16,17 @@ public sealed class MemberIntroductionService(
     MemberPromptFactory promptFactory,
     ILogger<MemberIntroductionService> logger) : IMemberIntroductionService
 {
-    public async Task<(int StatusCode, LudusLogicaeResponse<MemberIntroductionResponse> Envelope)>
+    public async Task<ServiceResult<MemberIntroductionResponse>>
         GenerateIntroductionAsync(
             Guid id,
             CancellationToken cancellationToken)
     {
         var member = await repository.GetByIdAsync(id, cancellationToken);
 
-        if (member is null) return member.ToNotFoundResponse<Member, MemberIntroductionResponse>("Member", id);
+        if (member is null)
+        {
+            return member.ToNotFoundResponse<Member, MemberIntroductionResponse>("Member", id);
+        }
 
         try
         {

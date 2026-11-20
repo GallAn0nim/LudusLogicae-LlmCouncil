@@ -20,7 +20,7 @@ public sealed class DebateCompletionService(
         await statsUpdater.UpdateStatsAfterDebateAsync(participants, state, cancellationToken);
     }
 
-    public async Task<(DebateState State, List<Member> Members)> InitializeDebateAsync(
+    public async Task<DebateState> InitializeDebateAsync(
         Debate debate,
         List<DebateParticipant> participants,
         List<Guid> memberIds,
@@ -38,6 +38,6 @@ public sealed class DebateCompletionService(
         var introductions = await introductionFetcher.FetchIntroductionsAsync(chosenMembers, cancellationToken);
         var state = factory.CreateInitialState(debate, participants, introductions);
 
-        return (state, chosenMembers);
+        return state;
     }
 }

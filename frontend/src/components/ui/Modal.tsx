@@ -82,7 +82,9 @@ export function Modal({ isOpen, onClose, title, children, size = 'md' }: ModalPr
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return createPortal(
     <div

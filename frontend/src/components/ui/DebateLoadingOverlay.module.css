@@ -36,7 +36,6 @@
   overflow: hidden;
 }
 
-/* Person styles */
 .person {
   display: flex;
   flex-direction: column;
@@ -65,7 +64,6 @@
   opacity: 0.8;
 }
 
-/* Talking scene */
 .speechArea {
   display: flex;
   flex-direction: column;
@@ -101,7 +99,6 @@
   color: var(--animation-color, var(--accent-primary));
 }
 
-/* Thinking scene */
 .thinkingHand {
   position: absolute;
   bottom: 28px;
@@ -169,7 +166,6 @@
   50% { opacity: 1; }
 }
 
-/* Fighting scene */
 .fightCenter {
   position: relative;
   display: flex;
@@ -243,7 +239,6 @@
   transform: translateX(-50%) rotate(180deg);
 }
 
-/* Coffee scene */
 .coffeeArea {
   display: flex;
   flex-direction: column;
@@ -299,7 +294,6 @@
   height: 10px;
 }
 
-/* Writing scene */
 .documentArea {
   display: flex;
   flex-direction: column;
@@ -349,7 +343,6 @@
   clip-path: polygon(50% 100%, 0 0, 100% 0);
 }
 
-/* Text styles */
 .title {
   font-size: 1.25rem;
   font-weight: 600;

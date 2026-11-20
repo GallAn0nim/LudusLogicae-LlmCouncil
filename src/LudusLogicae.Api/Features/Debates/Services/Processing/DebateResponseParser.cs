@@ -96,7 +96,10 @@ public sealed class DebateResponseParser(ILogger<DebateResponseParser> logger) :
     private MemberBallot ParseBallotFromJson(string json, int slot)
     {
         var output = TryParseJson<BallotOutput>(json, slot);
-        if (output?.Ranks == null) return new MemberBallot { Slot = slot, Ranks = [] };
+        if (output?.Ranks == null)
+        {
+            return new MemberBallot { Slot = slot, Ranks = [] };
+        }
 
         return new MemberBallot
         {
@@ -139,12 +142,18 @@ public sealed class DebateResponseParser(ILogger<DebateResponseParser> logger) :
 
     private static string CleanJsonString(string json)
     {
-        if (string.IsNullOrWhiteSpace(json)) return "{}";
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return "{}";
+        }
 
         var start = json.IndexOf('{');
         var end = json.LastIndexOf('}');
 
-        if (start >= 0 && end > start) return json.Substring(start, end - start + 1);
+        if (start >= 0 && end > start)
+        {
+            return json.Substring(start, end - start + 1);
+        }
 
         return json;
     }

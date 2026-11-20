@@ -464,7 +464,6 @@
   letter-spacing: 0.05em;
 }
 
-/* Status badge - left accent style */
 .statusBadge {
   display: inline-flex;
   align-items: center;

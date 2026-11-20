@@ -25,7 +25,10 @@ public sealed class MemberIntroductionCacheRepository(AppDbContext dbContext)
         List<Member> members,
         CancellationToken cancellationToken)
     {
-        if (!members.Any()) return [];
+        if (!members.Any())
+        {
+            return [];
+        }
 
         var cacheExpiration = DateTimeOffset.UtcNow.AddDays(-MemberConstants.IntroductionCacheDays);
         var memberIds = members.Select(m => m.Id).ToList();
@@ -45,7 +48,10 @@ public sealed class MemberIntroductionCacheRepository(AppDbContext dbContext)
                 .OrderByDescending(cache => cache.CreatedAt)
                 .FirstOrDefault();
 
-            if (matchingCache is not null) result.Add(matchingCache);
+            if (matchingCache is not null)
+            {
+                result.Add(matchingCache);
+            }
         }
 
         return result;
