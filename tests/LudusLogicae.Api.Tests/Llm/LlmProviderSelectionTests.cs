@@ -19,9 +19,9 @@ public class LlmProviderSelectionTests
         {
             ["Llm:DefaultProvider"] = "OpenAI",
             ["Llm:Providers:0:Name"] = "OpenAI",
-            ["Llm:Providers:0:DefaultModel"] = "gpt-4.1-mini",
-            ["Llm:Providers:0:SupportedModels:0"] = "gpt-4.1-nano",
-            ["Llm:Providers:0:SupportedModels:1"] = "gpt-4.1-mini",
+            ["Llm:Providers:0:DefaultModel"] = "gpt-5-mini",
+            ["Llm:Providers:0:SupportedModels:0"] = "gpt-5-nano",
+            ["Llm:Providers:0:SupportedModels:1"] = "gpt-5-mini",
             ["Llm:Providers:1:Name"] = "Anthropic",
             ["Llm:Providers:1:DefaultModel"] = "claude-haiku-5-5",
             ["Llm:Providers:1:SupportedModels:0"] = "claude-haiku-5-5",
@@ -66,8 +66,8 @@ public class LlmProviderSelectionTests
         Assert.Equal("OpenAI", providers.GetDefaultProvider());
         Assert.True(providers.IsProviderSupported("openai"));
         Assert.Equal("OpenAI", providers.ValidateAndFallbackProvider("Unknown"));
-        Assert.Equal("gpt-4.1-mini", providers.ValidateAndFallbackModel("OpenAI", "gpt-99"));
-        Assert.Equal("gpt-4.1-nano", providers.ValidateAndFallbackModel("OpenAI", "gpt-4.1-nano"));
+        Assert.Equal("gpt-5-mini", providers.ValidateAndFallbackModel("OpenAI", "gpt-99"));
+        Assert.Equal("gpt-5-nano", providers.ValidateAndFallbackModel("OpenAI", "gpt-5-nano"));
         Assert.NotNull(scope.ServiceProvider.GetKeyedService<ILLMClient>(ProviderSelectingLLMClient.Key("OpenAI")));
     }
 
@@ -95,7 +95,7 @@ public class LlmProviderSelectionTests
 
         Assert.Equal(["Anthropic"], providers.GetSupportedProviders());
         Assert.Equal("Anthropic", providers.ValidateAndFallbackProvider("OpenAI"));
-        Assert.Equal("claude-haiku-5-5", providers.ValidateAndFallbackModel("Anthropic", "gpt-4.1-nano"));
+        Assert.Equal("claude-haiku-5-5", providers.ValidateAndFallbackModel("Anthropic", "gpt-5-nano"));
         Assert.IsType<AnthropicLLMClient>(
             scope.ServiceProvider.GetKeyedService<ILLMClient>(ProviderSelectingLLMClient.Key("Anthropic")));
     }
@@ -112,7 +112,7 @@ public class LlmProviderSelectionTests
         using var scope = sp.CreateScope();
 
         await scope.ServiceProvider.GetRequiredService<ILLMClient>()
-            .SendAsync(new LLMRequest { Provider = "OpenAI", Model = "gpt-4.1-nano" });
+            .SendAsync(new LLMRequest { Provider = "OpenAI", Model = "gpt-5-nano" });
 
         Assert.Equal("Anthropic", fake.Last!.Provider);
         Assert.Equal("claude-haiku-5-5", fake.Last.Model);

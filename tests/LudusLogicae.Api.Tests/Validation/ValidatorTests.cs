@@ -89,7 +89,7 @@ public class MemberValidatorTests
             Name = "Test",
             Role = "Tester",
             Provider = "OpenAI",
-            Model = "gpt-4.1-mini",
+            Model = "gpt-5-mini",
             Temperature = temperature
         };
     }
@@ -101,7 +101,7 @@ public class MemberValidatorTests
             Name = "Test",
             Role = "Tester",
             Provider = "OpenAI",
-            Model = "gpt-4.1-mini",
+            Model = "gpt-5-mini",
             Temperature = temperature
         };
     }

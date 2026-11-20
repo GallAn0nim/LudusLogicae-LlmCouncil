@@ -243,7 +243,7 @@ The frontend enforces braces with the ESLint `curly: all` rule.
 - **Provider-Agnostic Design**: `ProviderSelectingLLMClient` routes each request to the member's provider
 - **Fallback Support**: Unsupported models fall back to the provider's default model
 - **Anthropic (default provider)**: `claude-sonnet-5-5` by default, medium effort; Haiku 5.5 and Opus 5.5 also supported
-- **OpenAI**: `gpt-5` by default with medium reasoning effort, via the Responses API; GPT-4.1 and GPT-5 mini/nano also supported
+- **OpenAI**: `gpt-5` by default with medium reasoning effort, via the Responses API; GPT-5 mini and nano also supported
 - **Resilience**: OpenAI calls use exponential-backoff retries and a circuit breaker
 - **Prompt Factories**: DebatePromptFactory and MemberPromptFactory for structured prompts
 - **Response Parsing**: Token tracking and usage monitoring
@@ -352,6 +352,38 @@ cd frontend
 npm run lint
 ```
 
+### Upgrading from PostgreSQL 16
+Docker Compose now runs PostgreSQL 19 and stores data in a new `postgres_data` volume. PostgreSQL 19 cannot read data files from version 16, so the old `db_data` volume is left untouched and has to be copied over once with a dump and restore.
+
+Find the old volume name (it starts with the project folder name, for example `luduslogicae-llmcouncil_db_data`):
+```bash
+docker volume ls
+```
+
+Dump the old database with a temporary PostgreSQL 16 container:
+```bash
+docker run -d --name luduslogicae-pg16 -v luduslogicae-llmcouncil_db_data:/var/lib/postgresql/data -e POSTGRES_PASSWORD=postgres postgres:16-alpine
+```
+```bash
+docker exec luduslogicae-pg16 pg_dump -U postgres --clean --if-exists ludus_logicae > backup.sql
+```
+```bash
+docker rm -f luduslogicae-pg16
+```
+
+Start the new database and restore the dump:
+```bash
+docker compose up -d db
+```
+```bash
+docker compose exec -T db psql -U postgres -d ludus_logicae < backup.sql
+```
+```bash
+docker compose up --build
+```
+
+Once everything works, the old volume can be removed with `docker volume rm luduslogicae-llmcouncil_db_data`.
+
 ### Using Rider
 1. Run → Edit Configurations → "+" → Docker Compose
 2. Add `docker-compose.yml`
@@ -370,7 +402,7 @@ npm run lint
 ## Recent Major Updates (v2.2)
 
 - **Anthropic Provider**: Added as the default provider, using Claude Sonnet 5.5 with medium effort
-- **OpenAI Defaults**: GPT-5 with medium reasoning effort replaces GPT-4.1 mini
+- **OpenAI Defaults**: GPT-5 with medium reasoning effort replaces GPT-4.1 mini; GPT-4.1 support removed and existing members moved to the matching GPT-5 model
 - **Code Style Pass**: Removed all comments, wrapped every block in braces, and replaced tuples in tests with named values
 
 ## Earlier Updates (v2.1)

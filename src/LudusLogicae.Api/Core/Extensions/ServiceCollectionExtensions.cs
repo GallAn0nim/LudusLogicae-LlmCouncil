@@ -20,7 +20,6 @@ using LudusLogicae.Api.Infrastructure.Data;
 using LudusLogicae.Api.Infrastructure.Llm.Abstractions;
 using LudusLogicae.Api.Infrastructure.Llm.Anthropic;
 using LudusLogicae.Api.Infrastructure.Llm.OpenAI;
-using LudusLogicae.Api.Infrastructure.Llm.OpenAI.Strategies;
 using LudusLogicae.Api.Infrastructure.Llm.Prompts;
 using LudusLogicae.Api.Infrastructure.Llm.Services;
 using Microsoft.EntityFrameworkCore;
@@ -157,9 +156,6 @@ public static class ServiceCollectionExtensions
                 new ApiKeyCredential(settings.ApiKey),
                 options);
         });
-
-        services.AddSingleton<IOpenAIModelStrategy, Gpt4ModelStrategy>();
-        services.AddSingleton<IOpenAIModelStrategy, Gpt5ModelStrategy>();
 
         services.AddSingleton<OpenAIResponsesClient>();
         services.AddKeyedSingleton<ILLMClient, ResilientOpenAIClient>(ProviderSelectingLLMClient.Key("OpenAI"));
