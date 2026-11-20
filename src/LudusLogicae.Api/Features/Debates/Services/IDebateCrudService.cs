@@ -5,25 +5,25 @@ namespace LudusLogicae.Api.Features.Debates.Services;
 
 public interface IDebateCrudService
 {
-    Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope, Guid? CreatedId)> CreateAsync(
+    Task<ServiceResult<DebateResponse>> CreateAsync(
         CreateDebateRequest request,
         CancellationToken ct);
-    Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope, Guid? CreatedId)> CreateWithoutSaveAsync(
+    Task<ServiceResult<DebateResponse>> CreateWithoutSaveAsync(
         CreateDebateRequest request,
         CancellationToken ct);
-    Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> GetByIdAsync(
+    Task<ServiceResult<DebateResponse>> GetByIdAsync(
         Guid id,
         CancellationToken ct);
-    Task<(int StatusCode, LudusLogicaeResponse<List<DebateResponse>> Envelope)> ListAsync(
+    Task<ServiceResult<List<DebateResponse>>> ListAsync(
         string? status,
         int page,
         int pageSize,
         CancellationToken ct);
-    Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> UpdateAsync(
+    Task<ServiceResult<DebateResponse>> UpdateAsync(
         Guid id,
         UpdateDebateRequest request,
         CancellationToken ct);
-    Task<(int StatusCode, LudusLogicaeResponse<string?> Envelope)> DeleteAsync(
+    Task<ServiceResult<string?>> DeleteAsync(
         Guid id,
         CancellationToken ct);
 }

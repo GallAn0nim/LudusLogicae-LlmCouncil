@@ -18,7 +18,9 @@ export function useAnimateOnMount<T extends HTMLElement>(options: AnimationOptio
   } = options;
 
   useEffect(() => {
-    if (!ref.current) return;
+    if (!ref.current) {
+      return;
+    }
 
     const element = ref.current;
     element.style.opacity = '0';
@@ -71,10 +73,14 @@ export function useStaggerAnimation<T extends HTMLElement>(
   const containerRef = useRef<T>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current) {
+      return;
+    }
 
     const children = containerRef.current.querySelectorAll(childSelector);
-    if (children.length === 0) return;
+    if (children.length === 0) {
+      return;
+    }
 
     children.forEach((child) => {
       (child as HTMLElement).style.opacity = '0';

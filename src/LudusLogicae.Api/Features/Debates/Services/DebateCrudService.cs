@@ -14,34 +14,39 @@ public sealed class DebateCrudService(
     IDebateValidator validator,
     IDebateFactory factory) : IDebateCrudService
 {
-    public async Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope, Guid? CreatedId)> CreateAsync(
+    public async Task<ServiceResult<DebateResponse>> CreateAsync(
         CreateDebateRequest request,
         CancellationToken cancellationToken)
     {
         var result = await CreateWithoutSaveAsync(request, cancellationToken);
 
-        if (result.StatusCode == 201) await repository.SaveChangesAsync(cancellationToken);
+        if (result.StatusCode == 201)
+        {
+            await repository.SaveChangesAsync(cancellationToken);
+        }
 
         return result;
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope, Guid? CreatedId)>
+    public Task<ServiceResult<DebateResponse>>
         CreateWithoutSaveAsync(
             CreateDebateRequest request,
             CancellationToken cancellationToken)
     {
         var validation = validator.ValidateDebateConfiguration(request.NMembers);
-        var validationError = validation.ToBadRequestWithIdIfInvalid<DebateResponse>();
-        if (validationError.HasValue) return Task.FromResult(validationError.Value);
+        var validationError = validation.ToBadRequestIfInvalid<DebateResponse>();
+        if (validationError is not null)
+        {
+            return Task.FromResult(validationError);
+        }
 
         var debate = factory.CreateDebateEntity(request);
         repository.Add(debate);
 
-        return Task.FromResult<(int, LudusLogicaeResponse<DebateResponse>, Guid?)>(
-            (201, ResponseFactory.Ok(debate.ToResponse()).Envelope, debate.Id));
+        return Task.FromResult(ResponseFactory.Ok(debate.ToResponse()) with { StatusCode = 201, CreatedId = debate.Id });
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> GetByIdAsync(
+    public async Task<ServiceResult<DebateResponse>> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -49,7 +54,7 @@ public sealed class DebateCrudService(
         return debate?.ToOkResponse(d => d.ToResponse()) ?? debate.ToNotFoundResponse<Debate, DebateResponse>("Debate", id);
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<List<DebateResponse>> Envelope)> ListAsync(
+    public async Task<ServiceResult<List<DebateResponse>>> ListAsync(
         string? status,
         int page,
         int pageSize,
@@ -66,25 +71,34 @@ public sealed class DebateCrudService(
         return ResponseFactory.Ok(items.Select(debate => debate.ToResponse()).ToList());
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> UpdateAsync(
+    public async Task<ServiceResult<DebateResponse>> UpdateAsync(
         Guid id,
         UpdateDebateRequest request,
         CancellationToken cancellationToken)
     {
         var debate = await repository.GetByIdAsync(id, cancellationToken, false);
-        if (debate is null) return debate.ToNotFoundResponse<Debate, DebateResponse>("Debate", id);
+        if (debate is null)
+        {
+            return debate.ToNotFoundResponse<Debate, DebateResponse>("Debate", id);
+        }
 
         var editableError = DebateValidationHelper.ValidateEditability<DebateResponse>(
             debate,
             validator,
             DebateOperationType.Update);
-        if (editableError != null) return editableError.Value;
+        if (editableError is not null)
+        {
+            return editableError;
+        }
 
         var effectiveMemberCount = request.NMembers ?? debate.NMembers;
 
         var validation = validator.ValidateDebateConfiguration(effectiveMemberCount);
         var validationError = validation.ToBadRequestIfInvalid<DebateResponse>();
-        if (validationError.HasValue) return validationError.Value;
+        if (validationError is not null)
+        {
+            return validationError;
+        }
 
         var updatedDebate = repository.ApplyUpdates(debate, request);
         await repository.SaveChangesAsync(cancellationToken);
@@ -92,12 +106,15 @@ public sealed class DebateCrudService(
         return ResponseFactory.Ok(updatedDebate.ToResponse());
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<string?> Envelope)> DeleteAsync(
+    public async Task<ServiceResult<string?>> DeleteAsync(
         Guid id,
         CancellationToken cancellationToken)
     {
         var debate = await repository.GetByIdAsync(id, cancellationToken, false);
-        if (debate is null) return debate.ToNotFoundResponse<Debate, string?>("Debate", id);
+        if (debate is null)
+        {
+            return debate.ToNotFoundResponse<Debate, string?>("Debate", id);
+        }
 
         repository.Remove(debate);
         await repository.SaveChangesAsync(cancellationToken);

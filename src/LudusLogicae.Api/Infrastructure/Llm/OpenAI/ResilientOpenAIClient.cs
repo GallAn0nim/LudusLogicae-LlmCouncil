@@ -29,8 +29,14 @@ public sealed class ResilientOpenAIClient : ILLMClient
                         "Circuit breaker opened due to consecutive failures. Will retry after {Duration}s",
                         duration.TotalSeconds);
                 },
-                () => { _logger.LogInformation("Circuit breaker reset. Resuming normal operation."); },
-                () => { _logger.LogInformation("Circuit breaker testing if service has recovered."); });
+                () =>
+                {
+                    _logger.LogInformation("Circuit breaker reset. Resuming normal operation.");
+                },
+                () =>
+                {
+                    _logger.LogInformation("Circuit breaker testing if service has recovered.");
+                });
     }
 
     public async Task<LLMResponse> SendAsync(LLMRequest request, CancellationToken cancellationToken = default)
@@ -48,7 +54,7 @@ public sealed class ResilientOpenAIClient : ILLMClient
                 "Circuit breaker is open. LLM provider appears to be unavailable.");
             throw new LLMClientException(
                 "LLM service is temporarily unavailable due to repeated failures. Please try again later.",
-                "OpenAI",
+                OpenAIResponsesClient.ProviderName,
                 inner: ex);
         }
     }

@@ -2,9 +2,9 @@ namespace LudusLogicae.Api.Shared.Contracts;
 
 public static class ResponseFactory
 {
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) Ok<T>(T data, string description = "OK")
+    public static ServiceResult<T> Ok<T>(T data, string description = "OK")
     {
-        return (200, new LudusLogicaeResponse<T>
+        return new ServiceResult<T>(200, new LudusLogicaeResponse<T>
         {
             Data = data,
             Metadata = new LudusLogicaeResponseMetadata
@@ -16,9 +16,9 @@ public static class ResponseFactory
         });
     }
 
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) Created<T>(T data, string description = "Created")
+    public static ServiceResult<T> Created<T>(T data, string description = "Created")
     {
-        return (201, new LudusLogicaeResponse<T>
+        return new ServiceResult<T>(201, new LudusLogicaeResponse<T>
         {
             Data = data,
             Metadata = new LudusLogicaeResponseMetadata
@@ -30,9 +30,9 @@ public static class ResponseFactory
         });
     }
 
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) NoContent<T>()
+    public static ServiceResult<T> NoContent<T>()
     {
-        return (204, new LudusLogicaeResponse<T>
+        return new ServiceResult<T>(204, new LudusLogicaeResponse<T>
         {
             Data = default!,
             Metadata = new LudusLogicaeResponseMetadata
@@ -44,42 +44,45 @@ public static class ResponseFactory
         });
     }
 
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) NotFound<T>(string message)
+    public static ServiceResult<T> NotFound<T>(string message)
     {
         return CreateErrorResponse<T>(404, "Not Found", message);
     }
 
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) BadRequest<T>(IEnumerable<string> errors)
+    public static ServiceResult<T> BadRequest<T>(IEnumerable<string> errors)
     {
         return CreateErrorResponse<T>(400, "Bad Request", errors);
     }
 
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) BadRequest<T>(string error)
+    public static ServiceResult<T> BadRequest<T>(string error)
     {
         return BadRequest<T>([error]);
     }
 
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) InternalServerError<T>(string message,
+    public static ServiceResult<T> InternalServerError<T>(string message,
         Exception? ex = null)
     {
         return CreateErrorResponse<T>(500, "Internal Server Error", message, ex);
     }
 
-    public static (int StatusCode, LudusLogicaeResponse<T> Envelope) BadGateway<T>(string message, Exception? ex = null)
+    public static ServiceResult<T> BadGateway<T>(string message, Exception? ex = null)
     {
         return CreateErrorResponse<T>(502, "Bad Gateway", message, ex);
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<T> Envelope) CreateErrorResponse<T>(
+    private static ServiceResult<T> CreateErrorResponse<T>(
         int statusCode,
         string statusDescription,
         string message,
         Exception? exception = null)
     {
         var errors = new List<string> { message };
-        if (exception != null) errors.Add(exception.Message);
+        if (exception != null)
+        {
+            errors.Add(exception.Message);
+        }
 
-        return (statusCode, new LudusLogicaeResponse<T>
+        return new ServiceResult<T>(statusCode, new LudusLogicaeResponse<T>
         {
             Data = default!,
             Metadata = new LudusLogicaeResponseMetadata
@@ -91,12 +94,12 @@ public static class ResponseFactory
         });
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<T> Envelope) CreateErrorResponse<T>(
+    private static ServiceResult<T> CreateErrorResponse<T>(
         int statusCode,
         string statusDescription,
         IEnumerable<string> errors)
     {
-        return (statusCode, new LudusLogicaeResponse<T>
+        return new ServiceResult<T>(statusCode, new LudusLogicaeResponse<T>
         {
             Data = default!,
             Metadata = new LudusLogicaeResponseMetadata

@@ -5,20 +5,20 @@ namespace LudusLogicae.Api.Features.Members.Services;
 
 public interface IMemberCrudService
 {
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope, Guid? CreatedId)> CreateAsync(
+    Task<ServiceResult<MemberDto>> CreateAsync(
         CreateMemberRequest request,
         CancellationToken cancellationToken);
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope)> GetByIdAsync(
+    Task<ServiceResult<MemberDto>> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken);
-    Task<(int StatusCode, LudusLogicaeResponse<MembersListResponse> Envelope)> ListAsync(
+    Task<ServiceResult<MembersListResponse>> ListAsync(
         MemberListQuery queryParams,
         CancellationToken cancellationToken);
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope)> UpdateAsync(
+    Task<ServiceResult<MemberDto>> UpdateAsync(
         Guid id,
         UpdateMemberRequest request,
         CancellationToken cancellationToken);
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto>? Envelope)> DeleteAsync(
+    Task<ServiceResult<MemberDto>> DeleteAsync(
         Guid id,
         CancellationToken cancellationToken);
 }

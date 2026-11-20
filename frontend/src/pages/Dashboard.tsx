@@ -20,10 +20,8 @@ export function Dashboard() {
   const [isCreateMemberOpen, setIsCreateMemberOpen] = useState(false);
   const [runningDebateId, setRunningDebateId] = useState<string | null>(null);
 
-  // Consolidated Stats Data
   const { data: stats, execute: fetchStats } = useApi(dashboardApi.getStats);
 
-  // Lists Data
   const { data: topMembers, execute: fetchTopMembers } = useApi(membersApi.list);
   const { data: recentDebates, execute: fetchRecentDebates } = useApi(debatesApi.list);
 
@@ -62,7 +60,6 @@ export function Dashboard() {
   }, []);
 
   useEffect(() => {
-    // Animation for Left Column
     if (leftColRef.current) {
       anime({
         targets: leftColRef.current.children,
@@ -74,7 +71,6 @@ export function Dashboard() {
       });
     }
 
-    // Animation for Right Column
     if (rightColRef.current) {
       anime({
         targets: rightColRef.current.children,
@@ -169,7 +165,6 @@ export function Dashboard() {
       />
 
       <div className={styles.mainGrid}>
-        {/* LEFT COLUMN: MEMBERS */}
         <div className={styles.column} ref={leftColRef}>
           <div className={styles.statsGrid}>
             {memberStats.map((stat, i) => (
@@ -226,12 +221,9 @@ export function Dashboard() {
             )}
           </Card>
 
-
         </div>
 
-        {/* RIGHT COLUMN: DEBATES */}
         <div className={styles.column} ref={rightColRef}>
-          {/* Debate Stats & Actions Grid */}
           <div className={styles.statsGrid}>
             {debateStats.map((stat, i) => (
               <Card
@@ -331,7 +323,6 @@ export function Dashboard() {
   );
 }
 
-// Helper component for debate status/winner
 function MemberBadge({ debate }: { debate: any }) {
   if (debate.state?.winner) {
     return (

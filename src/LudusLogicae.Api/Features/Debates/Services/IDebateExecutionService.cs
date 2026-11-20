@@ -5,7 +5,7 @@ namespace LudusLogicae.Api.Features.Debates.Services;
 
 public interface IDebateExecutionService
 {
-    Task<(int StatusCode, LudusLogicaeResponse<DebateState> Envelope)> ExecuteDebateAsync(
+    Task<ServiceResult<DebateState>> ExecuteDebateAsync(
         Guid id,
         CancellationToken ct);
 }

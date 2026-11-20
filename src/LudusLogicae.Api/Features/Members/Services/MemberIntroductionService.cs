@@ -16,14 +16,17 @@ public sealed class MemberIntroductionService(
     MemberPromptFactory promptFactory,
     ILogger<MemberIntroductionService> logger) : IMemberIntroductionService
 {
-    public async Task<(int StatusCode, LudusLogicaeResponse<MemberIntroductionResponse> Envelope)>
+    public async Task<ServiceResult<MemberIntroductionResponse>>
         GenerateIntroductionAsync(
             Guid id,
             CancellationToken cancellationToken)
     {
         var member = await repository.GetByIdAsync(id, cancellationToken);
 
-        if (member is null) return member.ToNotFoundResponse<Member, MemberIntroductionResponse>("Member", id);
+        if (member is null)
+        {
+            return member.ToNotFoundResponse<Member, MemberIntroductionResponse>("Member", id);
+        }
 
         try
         {
@@ -43,7 +46,10 @@ public sealed class MemberIntroductionService(
 
             var freshIntroduction = await GenerateIntroductionFromLlmAsync(member, cancellationToken);
 
-            await cacheRepository.SaveOrUpdateAsync(member, freshIntroduction.Introduction, cancellationToken);
+            if (IsFromMemberModel(member, freshIntroduction))
+            {
+                await cacheRepository.SaveOrUpdateAsync(member, freshIntroduction.Introduction, cancellationToken);
+            }
 
             return ResponseFactory.Ok(freshIntroduction);
         }
@@ -59,6 +65,12 @@ public sealed class MemberIntroductionService(
             return ResponseFactory.InternalServerError<MemberIntroductionResponse>(
                 "Unexpected error while generating introduction.", ex);
         }
+    }
+
+    private static bool IsFromMemberModel(Member member, MemberIntroductionResponse introduction)
+    {
+        return string.Equals(introduction.Provider, member.Provider, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(introduction.Model, member.Model, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<MemberIntroductionResponse> GenerateIntroductionFromLlmAsync(

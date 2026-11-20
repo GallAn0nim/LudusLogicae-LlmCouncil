@@ -27,8 +27,6 @@ public class DashboardController : ControllerBase
     [ProducesResponseType(typeof(DashboardStatsResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<DashboardStatsResponse>> GetStats(CancellationToken cancellationToken)
     {
-        // Execute queries sequentially to avoid "A second operation was started on this context instance" error.
-        // EF Core DbContext is not thread-safe.
         var totalMembers = await _memberRepository.BuildListQuery(null, null, null, null, null, null).CountAsync(cancellationToken);
         var activeMembers = await _memberRepository.BuildListQuery("Active", null, null, null, null, null).CountAsync(cancellationToken);
         var benchedMembers = await _memberRepository.BuildListQuery("Benched", null, null, null, null, null).CountAsync(cancellationToken);

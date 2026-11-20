@@ -26,7 +26,7 @@ public sealed class LlmResponseGenerator : ILlmResponseGenerator
     }
 
     public async Task<PhaseGenerationResult> GenerateResponsesInParallelAsync<TInput>(
-        List<(int SlotIndex, string Model, double Temperature, string SystemPrompt, TInput Input)> requestInputs,
+        List<PhaseRequest<TInput>> requestInputs,
         int maxOutputTokens,
         string phaseDescription,
         CancellationToken cancellationToken)
@@ -38,6 +38,7 @@ public sealed class LlmResponseGenerator : ILlmResponseGenerator
         {
             var userContent = JsonSerializer.Serialize(requestInput.Input, JsonOptions);
             var request = CreateLlmRequest(
+                requestInput.Provider,
                 requestInput.Model,
                 requestInput.Temperature,
                 requestInput.SystemPrompt,
@@ -81,31 +82,38 @@ public sealed class LlmResponseGenerator : ILlmResponseGenerator
         };
 
         if (result.IsCompleteFailure)
+        {
             _logger.LogError(
                 "Complete failure generating {Phase}: all {Count} responses failed",
                 phaseDescription,
                 result.TotalCount);
+        }
         else if (!result.IsFullySuccessful)
+        {
             _logger.LogWarning(
                 "Partial failure generating {Phase}: {SuccessCount}/{TotalCount} responses succeeded, {FailureCount} failed",
                 phaseDescription,
                 result.SuccessfulResponses.Count,
                 result.TotalCount,
                 result.Failures.Count);
+        }
         else
+        {
             _logger.LogInformation(
                 "Successfully generated all {Count} {Phase} responses",
                 result.SuccessfulResponses.Count,
                 phaseDescription);
+        }
 
         return result;
     }
 
-    private static LLMRequest CreateLlmRequest(string model, double temperature, string systemPrompt,
+    private static LLMRequest CreateLlmRequest(string provider, string model, double temperature, string systemPrompt,
         string userContent, int maxTokens)
     {
         return new LLMRequest
         {
+            Provider = provider,
             Model = model,
             Temperature = temperature,
             SystemPrompt = systemPrompt,

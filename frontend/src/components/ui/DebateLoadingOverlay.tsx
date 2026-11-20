@@ -44,7 +44,6 @@ export function DebateLoadingOverlay() {
   const sceneRef = useRef<HTMLDivElement>(null);
   const sceneIndexRef = useRef(0);
 
-  // Rotate messages every 4-6 seconds (randomized)
   useEffect(() => {
     const shuffled = [...LOADING_MESSAGES].sort(() => Math.random() - 0.5);
     let index = 0;
@@ -63,23 +62,19 @@ export function DebateLoadingOverlay() {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // Rotate scenes every 8-12 seconds with smooth transition
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const scheduleSceneChange = () => {
       const delay = 8000 + Math.random() * 4000;
       timeoutId = setTimeout(() => {
-        // Fade out (600ms for smoother transition)
         setOpacity(0);
 
-        // Change scene after fade out completes
         setTimeout(() => {
           sceneIndexRef.current = (sceneIndexRef.current + 1) % SCENE_SEQUENCE.length;
           setCurrentScene(SCENE_SEQUENCE[sceneIndexRef.current]);
           setColorIndex(prev => (prev + 1) % ACCENT_COLORS.length);
 
-          // Fade in after brief pause
           setTimeout(() => {
             setOpacity(1);
           }, 100);
@@ -93,13 +88,15 @@ export function DebateLoadingOverlay() {
     return () => clearTimeout(timeoutId);
   }, []);
 
-  // Animate current scene
   useEffect(() => {
-    if (!sceneRef.current || opacity === 0) return;
+    if (!sceneRef.current || opacity === 0) {
+      return;
+    }
 
-    // Small delay to let the DOM update
     const animationTimeout = setTimeout(() => {
-      if (!sceneRef.current) return;
+      if (!sceneRef.current) {
+        return;
+      }
 
       const elements = sceneRef.current.querySelectorAll('[data-animate]');
       anime.remove(elements);
@@ -264,7 +261,6 @@ function ThinkingScene() {
   );
 }
 
-// Animation functions
 function animateTalking(container: HTMLElement) {
   const leftPerson = container.querySelector('[data-animate="left-person"]');
   const rightPerson = container.querySelector('[data-animate="right-person"]');
@@ -487,7 +483,6 @@ function animateThinking(container: HTMLElement) {
     });
   }
 
-  // Staggered thought bubble appearance - from head upward
   const bubbles = [thoughtTiny, thoughtSmall, thoughtMain].filter(Boolean);
   if (bubbles.length) {
     anime({

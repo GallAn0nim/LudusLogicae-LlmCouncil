@@ -5,21 +5,21 @@ namespace LudusLogicae.Api.Features.Members.Services;
 
 public interface IMembersService
 {
-    Task<(int StatusCode, LudusLogicaeResponse<MemberIntroductionResponse> Envelope)>
+    Task<ServiceResult<MemberIntroductionResponse>>
         IntroduceAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<(int StatusCode, LudusLogicaeResponse<MembersListResponse> Envelope)>
+    Task<ServiceResult<MembersListResponse>>
         ListAsync(MemberListQuery queryParams, CancellationToken cancellationToken);
 
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope)>
+    Task<ServiceResult<MemberDto>>
         GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope, Guid? CreatedId)>
+    Task<ServiceResult<MemberDto>>
         CreateAsync(CreateMemberRequest request, CancellationToken cancellationToken);
 
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope)>
+    Task<ServiceResult<MemberDto>>
         UpdateAsync(Guid id, UpdateMemberRequest request, CancellationToken cancellationToken);
 
-    Task<(int StatusCode, LudusLogicaeResponse<MemberDto>? Envelope)>
+    Task<ServiceResult<MemberDto>>
         DeleteAsync(Guid id, CancellationToken cancellationToken);
 }

@@ -29,7 +29,6 @@ export function useApi<T, A extends unknown[] = []>(
   const lastArgsRef = useRef<string | null>(null);
 
   const execute = useCallback(async (...args: A): Promise<T | null> => {
-    // Deduplicate identical concurrent requests (handles React StrictMode double-calls)
     const argsKey = JSON.stringify(args);
     if (inFlightRef.current && lastArgsRef.current === argsKey) {
       return null;
@@ -93,7 +92,6 @@ export function useApiMutation<T, A extends unknown[] = []>(
   const inFlightRef = useRef(false);
 
   const execute = useCallback(async (...args: A): Promise<T | null> => {
-    // Prevent duplicate mutations while one is in flight
     if (inFlightRef.current) {
       return null;
     }

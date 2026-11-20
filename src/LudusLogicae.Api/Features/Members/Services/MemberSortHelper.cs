@@ -6,9 +6,15 @@ public static class MemberSortHelper
 {
     public static MemberSortOption ParseSortOption(string? sortBy)
     {
-        if (string.IsNullOrWhiteSpace(sortBy)) return MemberSortOption.CreatedDesc;
+        if (string.IsNullOrWhiteSpace(sortBy))
+        {
+            return MemberSortOption.CreatedDesc;
+        }
 
-        if (Enum.TryParse<MemberSortOption>(sortBy, true, out var enumValue)) return enumValue;
+        if (Enum.TryParse<MemberSortOption>(sortBy, true, out var enumValue))
+        {
+            return enumValue;
+        }
 
         return sortBy.ToLowerInvariant() switch
         {

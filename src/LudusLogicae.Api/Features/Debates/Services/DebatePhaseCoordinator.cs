@@ -45,7 +45,9 @@ public sealed class DebatePhaseCoordinator(
     {
         var totalRounds = state.TotalRounds > 0 ? state.TotalRounds : 3;
         for (var i = 1; i <= totalRounds; i++)
+        {
             await stepExecutor.ExecuteRoundAsync(debate, participants, state, i, cancellationToken);
+        }
     }
 
     private async Task ExecuteFinalPhaseAsync(
@@ -73,7 +75,10 @@ public sealed class DebatePhaseCoordinator(
         DebateState state,
         CancellationToken cancellationToken)
     {
-        if (!resultCalculator.HasTieForFirstPlace(state, out var tiedSlots)) return;
+        if (!resultCalculator.HasTieForFirstPlace(state, out var tiedSlots))
+        {
+            return;
+        }
 
         state.TieBreakVotes = await stepExecutor.ExecuteTieBreakRoundAsync(
             debate,
@@ -90,6 +95,8 @@ public sealed class DebatePhaseCoordinator(
     private void DetermineWinnerAsync(DebateState state)
     {
         if (state.Winner == null && state.Results.Length > 0)
+        {
             state.Winner = winnerBuilder.BuildWinner(state, state.Results[0].Slot);
+        }
     }
 }

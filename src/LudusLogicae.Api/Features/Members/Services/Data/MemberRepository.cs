@@ -19,11 +19,20 @@ public sealed class MemberRepository(AppDbContext dbContext) : BaseRepository<Me
     {
         var query = dbContext.Members.AsNoTracking().AsQueryable();
 
-        if (TryParseStatus(status, out var statusValue)) query = query.Where(member => member.Status == statusValue);
+        if (TryParseStatus(status, out var statusValue))
+        {
+            query = query.Where(member => member.Status == statusValue);
+        }
 
-        if (!string.IsNullOrWhiteSpace(provider)) query = query.Where(member => member.Provider == provider.Trim());
+        if (!string.IsNullOrWhiteSpace(provider))
+        {
+            query = query.Where(member => member.Provider == provider.Trim());
+        }
 
-        if (!string.IsNullOrWhiteSpace(model)) query = query.Where(member => member.Model == model.Trim());
+        if (!string.IsNullOrWhiteSpace(model))
+        {
+            query = query.Where(member => member.Model == model.Trim());
+        }
 
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -33,9 +42,15 @@ public sealed class MemberRepository(AppDbContext dbContext) : BaseRepository<Me
                 EF.Functions.ILike(member.Role, pattern));
         }
 
-        if (minWins.HasValue) query = query.Where(member => member.WinsCount >= minWins.Value);
+        if (minWins.HasValue)
+        {
+            query = query.Where(member => member.WinsCount >= minWins.Value);
+        }
 
-        if (minPoints.HasValue) query = query.Where(member => member.Points >= minPoints.Value);
+        if (minPoints.HasValue)
+        {
+            query = query.Where(member => member.Points >= minPoints.Value);
+        }
 
         return query;
     }

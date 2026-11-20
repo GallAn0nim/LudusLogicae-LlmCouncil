@@ -10,7 +10,6 @@
   perspective: 1200px;
 }
 
-/* Fog layers */
 .fogContainer {
   position: absolute;
   inset: 0;
@@ -47,7 +46,6 @@
   opacity: 0.3;
 }
 
-/* Flying pages */
 .pagesContainer {
   position: absolute;
   inset: 0;
@@ -76,7 +74,6 @@
   left: 25%;
 }
 
-/* Gate structure */
 .gateContainer {
   display: flex;
   align-items: flex-end;
@@ -149,7 +146,6 @@
   border-left: 1px solid #52525b;
 }
 
-/* Wrought iron pattern */
 .gatePattern {
   position: absolute;
   inset: 20px;
@@ -178,7 +174,6 @@
   z-index: 1;
 }
 
-/* Enter prompt */
 .enterPrompt {
   position: absolute;
   bottom: 10%;
@@ -204,7 +199,6 @@
   }
 }
 
-/* Lizard */
 .lizard {
   position: absolute;
   bottom: 15%;
@@ -232,7 +226,6 @@
   }
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .gate {
     width: 140px;

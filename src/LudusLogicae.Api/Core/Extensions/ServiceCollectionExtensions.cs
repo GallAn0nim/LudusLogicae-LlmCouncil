@@ -18,13 +18,14 @@ using LudusLogicae.Api.Features.Members.Validation;
 using LudusLogicae.Api.Features.Metadata.Services;
 using LudusLogicae.Api.Infrastructure.Data;
 using LudusLogicae.Api.Infrastructure.Llm.Abstractions;
+using LudusLogicae.Api.Infrastructure.Llm.Anthropic;
 using LudusLogicae.Api.Infrastructure.Llm.OpenAI;
-using LudusLogicae.Api.Infrastructure.Llm.OpenAI.Strategies;
 using LudusLogicae.Api.Infrastructure.Llm.Prompts;
 using LudusLogicae.Api.Infrastructure.Llm.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using Anthropic;
 using OpenAI;
 
 namespace LudusLogicae.Api.Core.Extensions;
@@ -37,6 +38,11 @@ public static class ServiceCollectionExtensions
     {
         services.AddOptions<OpenAISettings>()
             .Bind(configuration.GetSection(OpenAISettings.SectionName))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddOptions<AnthropicSettings>()
+            .Bind(configuration.GetSection(AnthropicSettings.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
@@ -70,15 +76,58 @@ public static class ServiceCollectionExtensions
             var dataSource = dataSourceBuilder.Build();
 
             options.UseNpgsql(dataSource,
-                npgsqlOptions => { npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "public"); });
+                npgsqlOptions =>
+                {
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", "public");
+                });
         });
 
         return services;
     }
 
-    public static IServiceCollection AddLlmServices(this IServiceCollection services)
+    public static IServiceCollection AddLlmServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddHttpClient("OpenAI", (serviceProvider, client) =>
+        services.AddScoped<ILLMClient, ProviderSelectingLLMClient>();
+
+        services.AddScoped<MemberPromptFactory>();
+        services.AddScoped<DebatePromptFactory>();
+
+        services.AddScoped<ILlmProviderService, LlmProviderService>();
+
+        if (!string.IsNullOrWhiteSpace(configuration[$"{OpenAISettings.SectionName}:ApiKey"]))
+        {
+            services.AddOpenAIProvider();
+        }
+
+        if (!string.IsNullOrWhiteSpace(configuration[$"{AnthropicSettings.SectionName}:ApiKey"]))
+        {
+            services.AddAnthropicProvider();
+        }
+
+        return services;
+    }
+
+    private static IServiceCollection AddAnthropicProvider(this IServiceCollection services)
+    {
+        services.AddSingleton(serviceProvider =>
+        {
+            var settings = serviceProvider.GetRequiredService<IOptions<AnthropicSettings>>().Value;
+            return new AnthropicClient
+            {
+                ApiKey = settings.ApiKey,
+                MaxRetries = settings.MaxRetries,
+                Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds)
+            };
+        });
+        services.AddKeyedSingleton<ILLMClient, AnthropicLLMClient>(
+            ProviderSelectingLLMClient.Key(AnthropicLLMClient.ProviderName));
+
+        return services;
+    }
+
+    private static IServiceCollection AddOpenAIProvider(this IServiceCollection services)
+    {
+        services.AddHttpClient(OpenAIResponsesClient.ProviderName, (serviceProvider, client) =>
         {
             var settings = serviceProvider.GetRequiredService<IOptions<OpenAISettings>>().Value;
             client.Timeout = TimeSpan.FromSeconds(settings.TimeoutSeconds);
@@ -90,10 +139,12 @@ public static class ServiceCollectionExtensions
             var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
 
             if (string.IsNullOrWhiteSpace(settings.ApiKey))
+            {
                 throw new InvalidOperationException(
                     "OpenAI API key is required. Please set the OpenAI:ApiKey configuration value.");
+            }
 
-            var httpClient = httpClientFactory.CreateClient("OpenAI");
+            var httpClient = httpClientFactory.CreateClient(OpenAIResponsesClient.ProviderName);
 
             var options = new OpenAIClientOptions
             {
@@ -106,18 +157,8 @@ public static class ServiceCollectionExtensions
                 options);
         });
 
-        services.AddSingleton<IOpenAIModelStrategy, Gpt4ModelStrategy>();
-        services.AddSingleton<IOpenAIModelStrategy, Gpt5ModelStrategy>();
-
-        services.AddTransient<OpenAIResponsesClient>();
-        services.AddTransient<ResilientOpenAIClient>();
-        services.AddTransient<ILLMClient>(serviceProvider =>
-            serviceProvider.GetRequiredService<ResilientOpenAIClient>());
-
-        services.AddScoped<MemberPromptFactory>();
-        services.AddScoped<DebatePromptFactory>();
-
-        services.AddScoped<ILlmProviderService, LlmProviderService>();
+        services.AddSingleton<OpenAIResponsesClient>();
+        services.AddKeyedSingleton<ILLMClient, ResilientOpenAIClient>(ProviderSelectingLLMClient.Key(OpenAIResponsesClient.ProviderName));
 
         return services;
     }
@@ -184,7 +225,9 @@ public static class ServiceCollectionExtensions
                                ?? configuration["ConnectionStrings:Default"];
 
         if (!string.IsNullOrWhiteSpace(connectionString))
+        {
             healthChecksBuilder.AddNpgSql(connectionString, name: "postgres");
+        }
 
         return services;
     }

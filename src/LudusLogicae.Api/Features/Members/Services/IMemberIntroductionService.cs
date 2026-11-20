@@ -5,7 +5,7 @@ namespace LudusLogicae.Api.Features.Members.Services;
 
 public interface IMemberIntroductionService
 {
-    Task<(int StatusCode, LudusLogicaeResponse<MemberIntroductionResponse> Envelope)> GenerateIntroductionAsync(
+    Task<ServiceResult<MemberIntroductionResponse>> GenerateIntroductionAsync(
         Guid id,
         CancellationToken cancellationToken);
 }

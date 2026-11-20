@@ -99,16 +99,25 @@ export function CreateDebateWizard({ onSubmit, onCancel, loading, initialData }:
   };
 
   const handleNext = () => {
-    if (!validateStep()) return;
+    if (!validateStep()) {
+      return;
+    }
 
-    if (step === 'question') setStep('settings');
-    else if (step === 'settings') setStep('members');
-    else handleSubmit();
+    if (step === 'question') {
+      setStep('settings');
+    } else if (step === 'settings') {
+      setStep('members');
+    } else {
+      handleSubmit();
+    }
   };
 
   const handleBack = () => {
-    if (step === 'settings') setStep('question');
-    else if (step === 'members') setStep('settings');
+    if (step === 'settings') {
+      setStep('question');
+    } else if (step === 'members') {
+      setStep('settings');
+    }
   };
 
   const handleSubmit = () => {
@@ -144,7 +153,9 @@ export function CreateDebateWizard({ onSubmit, onCancel, loading, initialData }:
               value={formData.question}
               onChange={(e) => {
                 setFormData({ ...formData, question: e.target.value });
-                if (errors.question) setErrors({});
+                if (errors.question) {
+                  setErrors({});
+                }
               }}
               placeholder="e.g., Is artificial general intelligence achievable within the next decade?"
               error={errors.question}
@@ -177,7 +188,7 @@ export function CreateDebateWizard({ onSubmit, onCancel, loading, initialData }:
                 }
               }}
               min={3}
-              max={10}
+              max={7}
               step={1}
             />
             <Slider

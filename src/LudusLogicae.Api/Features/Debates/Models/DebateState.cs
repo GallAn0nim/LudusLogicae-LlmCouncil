@@ -37,14 +37,18 @@ public sealed class DebateState
     {
         var final = FinalStatements.FirstOrDefault(a => a.Slot == slot);
         if (final != null && !string.IsNullOrWhiteSpace(final.Text))
+        {
             return final.Text;
+        }
 
         if (Rounds.Length > 0)
         {
             var lastRound = Rounds.Last();
             var amendment = lastRound.Amendments.FirstOrDefault(a => a.Slot == slot);
             if (amendment != null && !string.IsNullOrWhiteSpace(amendment.Text))
+            {
                 return amendment.Text;
+            }
         }
 
         var initial = InitialAnswers.FirstOrDefault(a => a.Slot == slot);

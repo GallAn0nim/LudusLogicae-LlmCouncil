@@ -6,19 +6,19 @@ namespace LudusLogicae.Api.Features.Debates.Services;
 
 public interface IDebateService
 {
-    Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope, Guid? CreatedId)> CreateAsync(
+    Task<ServiceResult<DebateResponse>> CreateAsync(
         CreateDebateRequest request, CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> GetByIdAsync(Guid id, CancellationToken ct);
+    Task<ServiceResult<DebateResponse>> GetByIdAsync(Guid id, CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<List<DebateResponse>> Envelope)> ListAsync(string? status, int page,
+    Task<ServiceResult<List<DebateResponse>>> ListAsync(string? status, int page,
         int pageSize, CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> UpdateAsync(Guid id,
+    Task<ServiceResult<DebateResponse>> UpdateAsync(Guid id,
         UpdateDebateRequest request, CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<string?> Envelope)> DeleteAsync(Guid id, CancellationToken ct);
+    Task<ServiceResult<string?>> DeleteAsync(Guid id, CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<DebateState> Envelope)> FullyRunDebateAsync(Guid id,
+    Task<ServiceResult<DebateState>> FullyRunDebateAsync(Guid id,
         CancellationToken ct);
 }
