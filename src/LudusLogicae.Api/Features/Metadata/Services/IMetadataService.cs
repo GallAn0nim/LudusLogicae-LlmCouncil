@@ -5,17 +5,17 @@ namespace LudusLogicae.Api.Features.Metadata.Services;
 
 public interface IMetadataService
 {
-    Task<(int StatusCode, LudusLogicaeResponse<string> Envelope)> PingAsync(CancellationToken ct);
+    Task<ServiceResult<string>> PingAsync(CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<MetadataInfoResponse> Envelope)> InfoAsync(CancellationToken ct);
+    Task<ServiceResult<MetadataInfoResponse>> InfoAsync(CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<List<string>> Envelope)> GetProvidersAsync(CancellationToken ct);
+    Task<ServiceResult<List<string>>> GetProvidersAsync(CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<List<string>> Envelope)> GetProviderModelsAsync(string id,
+    Task<ServiceResult<List<string>>> GetProviderModelsAsync(string id,
         CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<List<string>> Envelope)> GetDebatePhaseesAsync(CancellationToken ct);
+    Task<ServiceResult<List<string>>> GetDebatePhaseesAsync(CancellationToken ct);
 
-    Task<(int StatusCode, LudusLogicaeResponse<Dictionary<string, string>> Envelope)> GetMemberSortOptionsAsync(
+    Task<ServiceResult<Dictionary<string, string>>> GetMemberSortOptionsAsync(
         CancellationToken ct);
 }

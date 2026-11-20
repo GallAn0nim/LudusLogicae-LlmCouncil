@@ -88,6 +88,9 @@ public sealed class DebateWinnerBuilder : IDebateWinnerBuilder
     private static void AddAnswerGivenByWinner(DebateRound round, int winnerSlot, DebateHistoryItem item)
     {
         var answerGiven = round.Answers.FirstOrDefault(a => a.Slot == winnerSlot);
-        if (answerGiven != null) item.AnswerGiven = answerGiven.Text;
+        if (answerGiven != null)
+        {
+            item.AnswerGiven = answerGiven.Text;
+        }
     }
 }

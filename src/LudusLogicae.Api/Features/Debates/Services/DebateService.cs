@@ -11,16 +11,16 @@ public sealed class DebateService(
     IDebateExecutionService executionService,
     IDebateRepository repository) : IDebateService
 {
-    public async Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope, Guid? CreatedId)> CreateAsync(
+    public async Task<ServiceResult<DebateResponse>> CreateAsync(
         CreateDebateRequest request,
         CancellationToken ct)
     {
-        var (statusCode, envelope, createdId) = await crudService.CreateWithoutSaveAsync(request, ct);
+        var result = await crudService.CreateWithoutSaveAsync(request, ct);
 
-        if (statusCode == 201 && createdId.HasValue)
+        if (result.StatusCode == 201 && result.CreatedId.HasValue)
         {
             await participantService.AssignMembersWithoutSaveAsync(
-                createdId.Value,
+                result.CreatedId.Value,
                 request.MemberIds,
                 request.NMembers,
                 ct);
@@ -28,17 +28,17 @@ public sealed class DebateService(
             await repository.SaveChangesAsync(ct);
         }
 
-        return (statusCode, envelope, createdId);
+        return result;
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> GetByIdAsync(
+    public Task<ServiceResult<DebateResponse>> GetByIdAsync(
         Guid id,
         CancellationToken ct)
     {
         return crudService.GetByIdAsync(id, ct);
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<List<DebateResponse>> Envelope)> ListAsync(
+    public Task<ServiceResult<List<DebateResponse>>> ListAsync(
         string? status,
         int page,
         int pageSize,
@@ -47,28 +47,33 @@ public sealed class DebateService(
         return crudService.ListAsync(status, page, pageSize, ct);
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<DebateResponse> Envelope)> UpdateAsync(
+    public async Task<ServiceResult<DebateResponse>> UpdateAsync(
         Guid id,
         UpdateDebateRequest request,
         CancellationToken ct)
     {
         var debate = await crudService.GetByIdAsync(id, ct);
-        if (debate.StatusCode != 200) return debate;
+        if (debate.StatusCode != 200)
+        {
+            return debate;
+        }
 
         var effectiveMemberCount = request.NMembers ?? debate.Envelope.Data.NMembers;
 
         if (request.MemberIds != null ||
             (request.NMembers.HasValue && request.NMembers.Value != debate.Envelope.Data.NMembers))
+        {
             await participantService.ReplaceMembersAsync(
                 id,
                 request.MemberIds,
                 effectiveMemberCount,
                 ct);
+        }
 
         return await crudService.UpdateAsync(id, request, ct);
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<string?> Envelope)> DeleteAsync(
+    public async Task<ServiceResult<string?>> DeleteAsync(
         Guid id,
         CancellationToken ct)
     {
@@ -76,7 +81,7 @@ public sealed class DebateService(
         return await crudService.DeleteAsync(id, ct);
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<DebateState> Envelope)> FullyRunDebateAsync(
+    public Task<ServiceResult<DebateState>> FullyRunDebateAsync(
         Guid id,
         CancellationToken ct)
     {

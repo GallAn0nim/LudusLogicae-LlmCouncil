@@ -12,7 +12,7 @@ public interface IDebateCompletionService
         DebateState state,
         CancellationToken cancellationToken);
 
-    Task<(DebateState State, List<Member> Members)> InitializeDebateAsync(
+    Task<DebateState> InitializeDebateAsync(
         Debate debate,
         List<DebateParticipant> participants,
         List<Guid> memberIds,

@@ -129,7 +129,6 @@
   color: var(--text-tertiary);
 }
 
-/* Leaderboard Styles */
 .leaderboard {
   display: flex;
   flex-direction: column;
@@ -205,7 +204,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Debate List Styles */
 .debateList {
   display: flex;
   flex-direction: column;
@@ -271,7 +269,6 @@
   transform: translateX(0);
 }
 
-/* Action Button */
 .manageButton {
   width: 100%;
   display: flex;
@@ -321,7 +318,6 @@
   margin: 0;
 }
 
-/* Winner badge - pill with left accent like debate card */
 .winnerBadge {
   display: inline-flex;
   align-items: center;
@@ -339,13 +335,11 @@
   color: var(--text-muted);
 }
 
-/* Ready badge - simple text */
 .readyBadge {
   font-size: 0.75rem;
   color: var(--text-muted);
 }
 
-/* Action button for list items */
 .actionButton {
   color: var(--text-tertiary);
   flex-shrink: 0;

@@ -17,7 +17,6 @@ namespace LudusLogicae.Api.Migrations
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            // No rollback - we don't know the previous values
         }
     }
 }

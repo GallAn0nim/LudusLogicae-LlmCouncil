@@ -22,7 +22,10 @@ public sealed class DebateResultCalculator : IDebateResultCalculator
         var results = state.Results.ToList();
         var winner = results.FirstOrDefault(r => r.Slot == winnerSlot);
 
-        if (winner != null) winner.Score += DebateConstants.TieBreakBonusPoints;
+        if (winner != null)
+        {
+            winner.Score += DebateConstants.TieBreakBonusPoints;
+        }
 
         state.Results = results.OrderByDescending(r => r.Score).ToArray();
         AssignRanks(state.Results);
@@ -54,11 +57,13 @@ public sealed class DebateResultCalculator : IDebateResultCalculator
     private static void ApplyBallotScores(MemberBallot[] ballots, int memberCount, Dictionary<int, double> scores)
     {
         foreach (var ballot in ballots)
+        {
             foreach (var rank in ballot.Ranks)
             {
                 var points = memberCount - rank.Rank + 1;
                 scores[rank.Slot] = scores.GetValueOrDefault(rank.Slot, 0) + points;
             }
+        }
     }
 
     private static List<MemberScore> ConvertScoresToResults(Dictionary<int, double> scores)
@@ -71,7 +76,10 @@ public sealed class DebateResultCalculator : IDebateResultCalculator
 
     private static void AssignRanks(IList<MemberScore> results)
     {
-        for (var i = 0; i < results.Count; i++) results[i].Rank = i + 1;
+        for (var i = 0; i < results.Count; i++)
+        {
+            results[i].Rank = i + 1;
+        }
     }
 
     private static Dictionary<int, int> InitializeVoteCounts(int[] tiedSlots)
@@ -82,22 +90,43 @@ public sealed class DebateResultCalculator : IDebateResultCalculator
     private static void CountVotes(MemberVote[] votes, Dictionary<int, int> voteCounts)
     {
         foreach (var vote in votes)
+        {
             if (voteCounts.ContainsKey(vote.VotedForSlot))
+            {
                 voteCounts[vote.VotedForSlot]++;
+            }
+        }
     }
 
     private static bool IsBallotValid(MemberBallot ballot, int memberCount)
     {
-        if (ballot.Ranks == null || ballot.Ranks.Length == 0) return false;
+        if (ballot.Ranks == null || ballot.Ranks.Length == 0)
+        {
+            return false;
+        }
 
         var slots = ballot.Ranks.Select(r => r.Slot).ToArray();
 
         foreach (var slot in slots)
+        {
             if (slot < 1 || slot > memberCount)
+            {
                 return false;
+            }
+        }
 
-        if (slots.Length != slots.Distinct().Count()) return false;
+        if (slots.Length != slots.Distinct().Count())
+        {
+            return false;
+        }
 
-        return true;
+        var ranks = ballot.Ranks.Select(r => r.Rank).ToArray();
+
+        if (ranks.Any(rank => rank < 1 || rank > memberCount))
+        {
+            return false;
+        }
+
+        return ranks.Length == ranks.Distinct().Count();
     }
 }

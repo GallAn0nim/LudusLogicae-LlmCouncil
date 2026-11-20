@@ -19,7 +19,7 @@ builder.Services.AddApplicationOptions(configuration);
 
 builder.Services.AddDatabase(configuration);
 
-builder.Services.AddLlmServices();
+builder.Services.AddLlmServices(configuration);
 
 builder.Services.AddApplicationServices();
 

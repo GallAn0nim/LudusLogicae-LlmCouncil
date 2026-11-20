@@ -33,7 +33,9 @@ export function MemberCard({ member, onEdit, onDelete, onIntroduce, index = 0 }:
   }, [index]);
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Never';
+    if (!dateString) {
+      return 'Never';
+    }
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',

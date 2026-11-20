@@ -47,7 +47,9 @@ export function LandingPage() {
   }, []);
 
   const handleEnter = () => {
-    if (isOpening) return;
+    if (isOpening) {
+      return;
+    }
     setIsOpening(true);
 
     const timeline = anime.timeline({

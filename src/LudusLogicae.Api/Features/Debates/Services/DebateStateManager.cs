@@ -31,18 +31,22 @@ public sealed class DebateStateManager(
         debate.State = state;
 
         if (state.Winner != null)
+        {
             debate.Result = new DebateResult(
                 state.Winner.Member.Slot,
                 state.Winner.FinalStatement ?? "Winner determined"
             );
+        }
 
         if (state.Ballots.Length > 0)
+        {
             debate.Ballots = state.Ballots
                 .Select(b => new BallotItem(
                     b.Slot,
                     b.Ranks.OrderBy(r => r.Rank).Select(r => r.Slot).ToList()
                 ))
                 .ToList();
+        }
 
         dbContext.Entry(debate).Property(d => d.State).IsModified = true;
         await repository.SaveChangesAsync(cancellationToken);

@@ -15,7 +15,10 @@ public abstract class BaseRepository<TEntity>(AppDbContext dbContext)
         bool asNoTracking = true)
     {
         var query = _dbSet.AsQueryable();
-        if (asNoTracking) query = query.AsNoTracking();
+        if (asNoTracking)
+        {
+            query = query.AsNoTracking();
+        }
 
         return await query.FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }

@@ -2,51 +2,56 @@ using System.Reflection;
 using LudusLogicae.Api.Features.Debates.Entities;
 using LudusLogicae.Api.Features.Members.Services;
 using LudusLogicae.Api.Features.Metadata.Contracts;
+using LudusLogicae.Api.Infrastructure.Llm.Services;
 using LudusLogicae.Api.Shared.Contracts;
 
 namespace LudusLogicae.Api.Features.Metadata.Services;
 
-public sealed class MetadataService(IConfiguration configuration) : IMetadataService
+public sealed class MetadataService(ILlmProviderService llmProviderService) : IMetadataService
 {
-    public Task<(int StatusCode, LudusLogicaeResponse<string> Envelope)> PingAsync(CancellationToken ct)
+    public Task<ServiceResult<string>> PingAsync(CancellationToken ct)
     {
         return Task.FromResult(ResponseFactory.Ok("pong"));
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<MetadataInfoResponse> Envelope)> InfoAsync(CancellationToken ct)
+    public Task<ServiceResult<MetadataInfoResponse>> InfoAsync(CancellationToken ct)
     {
         var info = BuildInfo();
         return Task.FromResult(ResponseFactory.Ok(info));
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<List<string>> Envelope)> GetProvidersAsync(CancellationToken ct)
+    public Task<ServiceResult<List<string>>> GetProvidersAsync(CancellationToken ct)
     {
         var names = GetConfiguredProviders();
         return Task.FromResult(ResponseFactory.Ok(names));
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<List<string>> Envelope)> GetProviderModelsAsync(string id,
+    public Task<ServiceResult<List<string>>> GetProviderModelsAsync(string id,
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(id))
+        {
             return Task.FromResult(ResponseFactory.BadRequest<List<string>>("Provider id is required."));
+        }
 
         var models = GetModelsForProvider(id);
         if (models.Count == 0 &&
             !GetConfiguredProviders().Any(p => string.Equals(p, id, StringComparison.OrdinalIgnoreCase)))
+        {
             return Task.FromResult(ResponseFactory.NotFound<List<string>>($"Provider '{id}' not found."));
+        }
 
         return Task.FromResult(ResponseFactory.Ok(models));
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<List<string>> Envelope)> GetDebatePhaseesAsync(
+    public Task<ServiceResult<List<string>>> GetDebatePhaseesAsync(
         CancellationToken ct)
     {
         var values = Enum.GetNames(typeof(DebatePhase)).ToList();
         return Task.FromResult(ResponseFactory.Ok(values));
     }
 
-    public Task<(int StatusCode, LudusLogicaeResponse<Dictionary<string, string>> Envelope)> GetMemberSortOptionsAsync(
+    public Task<ServiceResult<Dictionary<string, string>>> GetMemberSortOptionsAsync(
         CancellationToken ct)
     {
         var sortOptions = MemberSortHelper.GetSortOptions();
@@ -95,7 +100,7 @@ public sealed class MetadataService(IConfiguration configuration) : IMetadataSer
             ],
             Stack = new StackInfo
             {
-                Backend = ".NET 10 Web API with EF Core",
+                Backend = ".NET 11 Web API with EF Core 11",
                 Data = "PostgreSQL with JSONB for state/results storage",
                 Deployment = "Docker + docker-compose (API + PostgreSQL)"
             }
@@ -104,25 +109,14 @@ public sealed class MetadataService(IConfiguration configuration) : IMetadataSer
 
     private List<string> GetConfiguredProviders()
     {
-        var providersSection = configuration.GetSection("Llm:Providers");
-        var names = providersSection.GetChildren()
-            .Select(c => c["Name"])
-            .Where(n => !string.IsNullOrWhiteSpace(n))
-            .Select(n => n!)
+        return llmProviderService.GetSupportedProviders()
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(n => n, StringComparer.OrdinalIgnoreCase)
             .ToList();
-        return names;
     }
 
     private List<string> GetModelsForProvider(string provider)
     {
-        if (string.IsNullOrWhiteSpace(provider)) return [];
-        var providersSection = configuration.GetSection("Llm:Providers");
-        var match = providersSection.GetChildren()
-            .FirstOrDefault(c => string.Equals(c["Name"], provider, StringComparison.OrdinalIgnoreCase));
-        if (match is null) return [];
-        return (match.GetSection("SupportedModels").Get<string[]>()?.Where(x => x != null)).ToList() ??
-               [];
+        return llmProviderService.GetSupportedModelsForProvider(provider).ToList();
     }
 }

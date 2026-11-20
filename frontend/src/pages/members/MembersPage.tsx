@@ -62,7 +62,6 @@ export function MembersPage() {
     setQuery((prev) => ({ ...prev, searchTerm: searchTerm || undefined, page: 1 }));
   }, [searchTerm]);
 
-  // Auto-search after 3 characters with 1s debounce
   useEffect(() => {
     if (searchTerm.length >= 3) {
       const timer = setTimeout(() => {
@@ -76,7 +75,6 @@ export function MembersPage() {
     const newQuery = { ...query, [field]: value || undefined, page: 1 };
     setQuery(newQuery);
 
-    // Update URL params
     if (field === 'status') {
       if (value) {
         searchParams.set('status', value as string);
@@ -277,7 +275,7 @@ export function MembersPage() {
         onClose={() => setIntroducingMember(null)}
         title={`Introduction: ${introducingMember?.name}`}
       >
-        <div className={styles.deleteConfirm}> {/* Reusing container for simplicity or create styles.introContent if defined. MemberDetailPage used introContent. MembersPage doesn't have it yet. I'll rely on inline styles for now to avoid CSS edits. */}
+        <div className={styles.deleteConfirm}>
           {introspecting && <Loading text="Generating introduction..." />}
           {!introspecting && introText && (
             <div style={{ padding: '1rem 0' }}>

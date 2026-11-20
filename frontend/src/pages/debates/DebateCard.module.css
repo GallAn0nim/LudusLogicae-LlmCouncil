@@ -47,7 +47,7 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 4.2rem; /* 3 lines at 1rem * 1.4 line-height */
+  min-height: 4.2rem;
 }
 
 .context {
@@ -113,7 +113,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Ready state indicator - matches winner style */
 .readyIndicator {
   display: flex;
   align-items: center;
@@ -158,7 +157,6 @@
   background: var(--bg-hover);
 }
 
-/* Status badge - left accent style */
 .statusBadge {
   display: inline-flex;
   align-items: center;

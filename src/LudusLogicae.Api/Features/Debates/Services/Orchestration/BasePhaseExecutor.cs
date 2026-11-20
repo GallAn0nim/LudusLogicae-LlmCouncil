@@ -45,19 +45,18 @@ public abstract class BasePhaseExecutor<TInput, TOutput>(
 
     public abstract TOutput ParseResults(List<RawPhaseResult> rawResults);
 
-    protected virtual List<(int SlotIndex, string Model, double Temperature, string SystemPrompt, TInput Input)>
-        BuildRequestInputs(
-            Debate debate,
-            List<DebateParticipant> participants,
-            DebateState state)
+    protected virtual List<PhaseRequest<TInput>> BuildRequestInputs(
+        Debate debate,
+        List<DebateParticipant> participants,
+        DebateState state)
     {
-        return participants.Select(p => (
+        return participants.Select(p => new PhaseRequest<TInput>(
             p.SlotIndex,
+            p.Provider,
             p.Model,
             p.Temperature,
-            SystemPrompt: GetSystemPromptForParticipant(state, p, debate.NMembers),
-            Input: CreatePhaseInput(debate, p, state)
-        )).ToList();
+            GetSystemPromptForParticipant(state, p, debate.NMembers),
+            CreatePhaseInput(debate, p, state))).ToList();
     }
 
     protected string GetSystemPromptForParticipant(DebateState state, DebateParticipant participant, int memberCount)

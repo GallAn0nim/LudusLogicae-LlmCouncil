@@ -20,6 +20,7 @@ public sealed class MemberSelectionService(AppDbContext db) : IMemberSelectionSe
 
             var benchedCount = 0;
             foreach (var member in foundMembers)
+            {
                 if (member.Status == MemberStatus.Benched)
                 {
                     if (benchedCount == 0)
@@ -32,6 +33,7 @@ public sealed class MemberSelectionService(AppDbContext db) : IMemberSelectionSe
                 {
                     chosenMembers.Add(member);
                 }
+            }
         }
 
         var missingCount = requiredCount - chosenMembers.Count;
@@ -73,7 +75,10 @@ public sealed class MemberSelectionService(AppDbContext db) : IMemberSelectionSe
 
     public async Task<List<Member>> GetMembersByIdsAsync(List<Guid> memberIds, CancellationToken ct)
     {
-        if (memberIds == null || memberIds.Count == 0) return [];
+        if (memberIds == null || memberIds.Count == 0)
+        {
+            return [];
+        }
 
         var distinctIds = memberIds.Distinct().ToList();
         return await db.Members.AsNoTracking()

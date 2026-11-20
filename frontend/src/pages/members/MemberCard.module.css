@@ -62,7 +62,7 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  min-height: 2.4375rem; /* 2 lines at 0.8125rem * 1.5 line-height */
+  min-height: 2.4375rem;
 }
 
 .stats {
@@ -175,7 +175,6 @@
   background: var(--bg-hover);
 }
 
-/* Status badge - left accent style */
 .statusBadge {
   display: inline-flex;
   align-items: center;

@@ -14,7 +14,9 @@ public sealed class DebateRepository(AppDbContext dbContext) : BaseRepository<De
         var query = dbContext.Debates.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(status) && Enum.TryParse<DebatePhase>(status, true, out var statusEnum))
+        {
             query = query.Where(debate => debate.Phase == statusEnum);
+        }
 
         return query;
     }
@@ -54,9 +56,15 @@ public sealed class DebateRepository(AppDbContext dbContext) : BaseRepository<De
             .Where(newP => existingParticipantsBySlot.ContainsKey(newP.SlotIndex))
             .ToList();
 
-        if (toRemove.Count > 0) dbContext.DebateParticipants.RemoveRange(toRemove);
+        if (toRemove.Count > 0)
+        {
+            dbContext.DebateParticipants.RemoveRange(toRemove);
+        }
 
-        if (toAdd.Count > 0) dbContext.DebateParticipants.AddRange(toAdd);
+        if (toAdd.Count > 0)
+        {
+            dbContext.DebateParticipants.AddRange(toAdd);
+        }
 
         foreach (var updated in toUpdate)
         {
@@ -85,13 +93,25 @@ public sealed class DebateRepository(AppDbContext dbContext) : BaseRepository<De
 
     public Debate ApplyUpdates(Debate debate, UpdateDebateRequest request)
     {
-        if (request.Question != null) debate.Question = request.Question;
+        if (request.Question != null)
+        {
+            debate.Question = request.Question;
+        }
 
-        if (request.NMembers.HasValue) debate.NMembers = request.NMembers.Value;
+        if (request.NMembers.HasValue)
+        {
+            debate.NMembers = request.NMembers.Value;
+        }
 
-        if (request.NRounds.HasValue) debate.NRounds = request.NRounds.Value;
+        if (request.NRounds.HasValue)
+        {
+            debate.NRounds = request.NRounds.Value;
+        }
 
-        if (request.Context != null) debate.Context = request.Context;
+        if (request.Context != null)
+        {
+            debate.Context = request.Context;
+        }
 
         return debate;
     }

@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 
 COPY LudusLogicae.sln ./
@@ -11,7 +11,7 @@ RUN dotnet publish src/LudusLogicae.Api/LudusLogicae.Api.csproj -c Release -o /a
 RUN mkdir -p /https \
     && dotnet dev-certs https -ep /https/aspnetapp.pfx -p devcertpassword -q
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS final
 WORKDIR /app
 
 EXPOSE 8080

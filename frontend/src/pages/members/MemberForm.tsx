@@ -32,7 +32,6 @@ export function MemberForm({ member, onSubmit, onCancel, loading }: MemberFormPr
     metadataApi.getProviders()
       .then((data) => {
         console.log('Providers loaded:', data);
-        // Map string array to ProviderInfo objects
         const mappedProviders = Array.isArray(data)
           ? data.map((p: any) => typeof p === 'string' ? { id: p, name: p } : p)
           : [];
@@ -50,7 +49,6 @@ export function MemberForm({ member, onSubmit, onCancel, loading }: MemberFormPr
       metadataApi.getModels(formData.provider)
         .then((data) => {
           console.log('Models loaded:', data);
-          // Map string array to ModelInfo objects
           const mappedModels = Array.isArray(data)
             ? data.map((m: any) => typeof m === 'string' ? { id: m, name: m } : m)
             : [];

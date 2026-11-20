@@ -13,24 +13,26 @@ public sealed class MemberCrudService(
     IMemberRepository repository,
     IMemberValidator validator) : IMemberCrudService
 {
-    public async Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope, Guid? CreatedId)> CreateAsync(
+    public async Task<ServiceResult<MemberDto>> CreateAsync(
         CreateMemberRequest request,
         CancellationToken cancellationToken)
     {
         var validation = validator.ValidateCreateRequest(request);
-        var validationError = validation.ToBadRequestWithIdIfInvalid<MemberDto>();
-        if (validationError.HasValue) return validationError.Value;
+        var validationError = validation.ToBadRequestIfInvalid<MemberDto>();
+        if (validationError is not null)
+        {
+            return validationError;
+        }
 
         var memberEntity = MapRequestToEntity(request);
 
         repository.Add(memberEntity);
         await repository.SaveChangesAsync(cancellationToken);
 
-        var response = ResponseFactory.Created(memberEntity.ToMemberDto());
-        return (201, response.Envelope, memberEntity.Id);
+        return ResponseFactory.Created(memberEntity.ToMemberDto()) with { CreatedId = memberEntity.Id };
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope)> GetByIdAsync(
+    public async Task<ServiceResult<MemberDto>> GetByIdAsync(
         Guid id,
         CancellationToken cancellationToken)
     {
@@ -39,7 +41,7 @@ public sealed class MemberCrudService(
         return member?.ToOkResponse(m => m.ToMemberDto()) ?? member.ToNotFoundResponse<Member, MemberDto>("Member", id);
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<MembersListResponse> Envelope)> ListAsync(
+    public async Task<ServiceResult<MembersListResponse>> ListAsync(
         MemberListQuery queryParams,
         CancellationToken cancellationToken)
     {
@@ -77,18 +79,24 @@ public sealed class MemberCrudService(
         return ResponseFactory.Ok(payload);
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<MemberDto> Envelope)> UpdateAsync(
+    public async Task<ServiceResult<MemberDto>> UpdateAsync(
         Guid id,
         UpdateMemberRequest request,
         CancellationToken cancellationToken)
     {
         var validation = validator.ValidateUpdateRequest(request);
         var validationError = validation.ToBadRequestIfInvalid<MemberDto>();
-        if (validationError.HasValue) return validationError.Value;
+        if (validationError is not null)
+        {
+            return validationError;
+        }
 
         var memberEntity = await repository.GetByIdAsync(id, cancellationToken, false);
 
-        if (memberEntity is null) return memberEntity.ToNotFoundResponse<Member, MemberDto>("Member", id);
+        if (memberEntity is null)
+        {
+            return memberEntity.ToNotFoundResponse<Member, MemberDto>("Member", id);
+        }
 
         repository.ApplyUpdates(memberEntity, request);
 
@@ -96,7 +104,7 @@ public sealed class MemberCrudService(
         return ResponseFactory.Ok(memberEntity.ToMemberDto());
     }
 
-    public async Task<(int StatusCode, LudusLogicaeResponse<MemberDto>? Envelope)> DeleteAsync(
+    public async Task<ServiceResult<MemberDto>> DeleteAsync(
         Guid id,
         CancellationToken cancellationToken)
     {

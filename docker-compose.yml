@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:19-alpine
     container_name: luduslogicae-db
     restart: unless-stopped
     environment:
@@ -10,7 +10,7 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
@@ -34,13 +34,12 @@ services:
       OpenAI__TimeoutSeconds: ${OPENAI_TIMEOUT_SECONDS:-60}
       OpenAI__MaxRetries: ${OPENAI_MAX_RETRIES:-3}
       OpenAI__RetryBaseDelayMs: ${OPENAI_RETRY_BASE_DELAY_MS:-250}
+      Anthropic__ApiKey: ${ANTHROPIC_API_KEY:-}
+      Llm__DefaultProvider: ${LLM_DEFAULT_PROVIDER:-Anthropic}
       Llm__Providers__0__Name: OpenAI
-      Llm__Providers__0__SupportedModels__0: gpt-4.1
-      Llm__Providers__0__SupportedModels__1: gpt-4.1-mini
-      Llm__Providers__0__SupportedModels__2: gpt-4.1-nano
-      Llm__Providers__0__SupportedModels__3: gpt-5
-      Llm__Providers__0__SupportedModels__4: gpt-5-mini
-      Llm__Providers__0__SupportedModels__5: gpt-5-nano
+      Llm__Providers__0__SupportedModels__0: gpt-5
+      Llm__Providers__0__SupportedModels__1: gpt-5-mini
+      Llm__Providers__0__SupportedModels__2: gpt-5-nano
     depends_on:
       db:
         condition: service_healthy
@@ -62,4 +61,4 @@ services:
       - NODE_ENV=production
 
 volumes:
-  db_data:
+  postgres_data:

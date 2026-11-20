@@ -38,32 +38,32 @@ public sealed class RoundQuestionPhaseExecutor(
         return ParseResults(rawResults);
     }
 
-    protected override
-        List<(int SlotIndex, string Model, double Temperature, string SystemPrompt, RoundQuestionPhaseInput Input)>
-        BuildRequestInputs(
-            Debate debate,
-            List<DebateParticipant> participants,
-            DebateState state)
+    protected override List<PhaseRequest<RoundQuestionPhaseInput>> BuildRequestInputs(
+        Debate debate,
+        List<DebateParticipant> participants,
+        DebateState state)
     {
         return participants
             .Select(p =>
             {
                 var pairing = _pairings.FirstOrDefault(pair => pair.FromSlot == p.SlotIndex);
                 if (pairing == null)
-                    return default;
+                {
+                    return null;
+                }
 
                 var targetSlot = pairing.ToSlot;
                 var targetName = participants.First(e => e.SlotIndex == targetSlot).Name;
 
-                return (
+                return new PhaseRequest<RoundQuestionPhaseInput>(
                     p.SlotIndex,
+                    p.Provider,
                     p.Model,
                     p.Temperature,
-                    SystemPrompt: GetSystemPromptForParticipant(state, p, debate.NMembers),
-                    Input: CreatePhaseInput(debate, p, state, targetSlot, targetName)
-                );
+                    GetSystemPromptForParticipant(state, p, debate.NMembers),
+                    CreatePhaseInput(debate, p, state, targetSlot, targetName));
             })
-            .Where(r => r != default)
+            .OfType<PhaseRequest<RoundQuestionPhaseInput>>()
             .ToList();
     }
 

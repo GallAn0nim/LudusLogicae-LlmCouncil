@@ -21,9 +21,8 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             traceId,
             context.Request.Path);
 
-        var (statusCode, response) = exception switch
+        var result = exception switch
         {
-
             LLMClientException llmEx => HandleLLMException(llmEx, traceId),
 
             TaskCanceledException or OperationCanceledException => HandleCancelledException(traceId),
@@ -39,96 +38,84 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
             _ => HandleGenericException(exception, traceId)
         };
 
-        context.Response.StatusCode = statusCode;
+        context.Response.StatusCode = result.StatusCode;
         context.Response.ContentType = "application/json";
 
-        await context.Response.WriteAsJsonAsync(new { response }, cancellationToken);
+        await context.Response.WriteAsJsonAsync(new { response = result.Envelope }, cancellationToken);
 
         return true;
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleLLMException(
+    private static ServiceResult<object> HandleLLMException(
         LLMClientException exception,
         string traceId)
     {
-        var (statusCode, envelope) = ResponseFactory.BadGateway<object>(
+        return ResponseFactory.BadGateway<object>(
             $"LLM provider error ({exception.Provider}): {exception.Message}",
             exception);
-
-        return (statusCode, envelope);
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleCancelledException(string traceId)
+    private static ServiceResult<object> HandleCancelledException(string traceId)
     {
-        var (statusCode, envelope) = ResponseFactory.BadRequest<object>("Request was cancelled.");
-        return (499, envelope);
+        return ResponseFactory.BadRequest<object>("Request was cancelled.") with { StatusCode = 499 };
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleArgumentException(
+    private static ServiceResult<object> HandleArgumentException(
         ArgumentException exception,
         string traceId)
     {
-        var (statusCode, envelope) = ResponseFactory.BadRequest<object>(exception.Message);
-        return (statusCode, envelope);
+        return ResponseFactory.BadRequest<object>(exception.Message);
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleInvalidOperationException(
+    private static ServiceResult<object> HandleInvalidOperationException(
         InvalidOperationException exception,
         string traceId)
     {
-        var (statusCode, envelope) = ResponseFactory.BadRequest<object>(exception.Message);
-        return (statusCode, envelope);
+        return ResponseFactory.BadRequest<object>(exception.Message);
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleTimeoutException(
+    private static ServiceResult<object> HandleTimeoutException(
         TimeoutException exception,
         string traceId)
     {
-        var (statusCode, envelope) = ResponseFactory.InternalServerError<object>(
+        return ResponseFactory.InternalServerError<object>(
             "The request timed out. Please try again.",
-            exception);
-        return (504, envelope);
+            exception) with { StatusCode = 504 };
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleDatabaseException(
+    private static ServiceResult<object> HandleDatabaseException(
         DbUpdateException exception,
         string traceId)
     {
-
         var isConflict = exception.InnerException?.Message.Contains("duplicate key") == true ||
                          exception.InnerException?.Message.Contains("unique constraint") == true ||
                          exception.InnerException?.Message.Contains("UNIQUE constraint") == true;
 
         if (isConflict)
         {
-            var (statusCode, envelope) = ResponseFactory.BadRequest<object>(
-                "The operation conflicts with existing data. Please check your input.");
-            return (409, envelope);
+            return ResponseFactory.BadRequest<object>(
+                "The operation conflicts with existing data. Please check your input.") with { StatusCode = 409 };
         }
 
-        var (genericStatusCode, genericEnvelope) = ResponseFactory.InternalServerError<object>(
+        return ResponseFactory.InternalServerError<object>(
             "A database error occurred while processing your request.",
             exception);
-        return (genericStatusCode, genericEnvelope);
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleConcurrencyException(
+    private static ServiceResult<object> HandleConcurrencyException(
         DbUpdateConcurrencyException exception,
         string traceId)
     {
-        var (statusCode, envelope) = ResponseFactory.BadRequest<object>(
-            "The data has been modified by another user. Please refresh and try again.");
-        return (409, envelope);
+        return ResponseFactory.BadRequest<object>(
+            "The data has been modified by another user. Please refresh and try again.") with { StatusCode = 409 };
     }
 
-    private static (int StatusCode, LudusLogicaeResponse<object> Response) HandleGenericException(
+    private static ServiceResult<object> HandleGenericException(
         Exception exception,
         string traceId)
     {
-        var (statusCode, envelope) = ResponseFactory.InternalServerError<object>(
+        return ResponseFactory.InternalServerError<object>(
             "An unexpected error occurred while processing your request.",
             exception);
-
-        return (statusCode, envelope);
     }
 }

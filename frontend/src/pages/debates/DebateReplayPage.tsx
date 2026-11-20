@@ -36,7 +36,7 @@ export function DebateReplayPage() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
     const [isTyping, setIsTyping] = useState(false);
-    const [speed, setSpeed] = useState(2500); // Default 1x speed
+    const [speed, setSpeed] = useState(2500);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
     const [isContextExpanded, setIsContextExpanded] = useState(false);
 
@@ -44,7 +44,9 @@ export function DebateReplayPage() {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!id) return;
+        if (!id) {
+          return;
+        }
 
         debatesApi
             .get(id)
@@ -65,14 +67,14 @@ export function DebateReplayPage() {
         });
     };
 
-    // Build all messages when debate loads
     useEffect(() => {
-        if (!debate || !debate.state) return;
+        if (!debate || !debate.state) {
+          return;
+        }
 
         const allMessages: Message[] = [];
         const state = debate.state;
 
-        // System welcome
         allMessages.push({
             id: 'welcome',
             type: 'system',
@@ -80,7 +82,6 @@ export function DebateReplayPage() {
             content: `Welcome! Today is ${formatDate(debate.createdAt)}.`
         });
 
-        // Topic introduction
         allMessages.push({
             id: 'topic',
             type: 'system',
@@ -97,7 +98,6 @@ export function DebateReplayPage() {
             });
         }
 
-        // Introduce participants
         if (state.members && state.members.length > 0) {
             allMessages.push({
                 id: 'intro-participants',
@@ -106,7 +106,6 @@ export function DebateReplayPage() {
                 content: `Let me introduce our ${state.members.length} distinguished participants. Please introduce yourselves!`
             });
 
-            // Member self-introductions using their initial answers
             state.members.forEach((member) => {
                 allMessages.push({
                     id: `intro-${member.slot}`,
@@ -126,7 +125,6 @@ export function DebateReplayPage() {
             });
         }
 
-        // Initial Answers
         if (state.initialAnswers && state.initialAnswers.length > 0) {
             allMessages.push({
                 id: 'phase-initial',
@@ -157,7 +155,6 @@ export function DebateReplayPage() {
             });
         }
 
-        // Rounds
         if (state.rounds) {
             state.rounds.forEach((round) => {
                 allMessages.push({
@@ -167,7 +164,6 @@ export function DebateReplayPage() {
                     content: `📢 Round ${round.roundNumber}: Cross-Examination - Participants will now question each other.`
                 });
 
-                // Interleave questions and answers for natural flow
                 const questions = round.questions || [];
                 const answers = round.answers || [];
 
@@ -176,7 +172,6 @@ export function DebateReplayPage() {
                     const toMember = state.members.find((m) => m.slot === question.toSlot);
 
                     if (fromMember && toMember) {
-                        // Add the question
                         allMessages.push({
                             id: `q-${round.roundNumber}-${idx}`,
                             type: 'member',
@@ -186,7 +181,6 @@ export function DebateReplayPage() {
                             content: question.text
                         });
 
-                        // Find and add the corresponding answer immediately
                         const answer = answers.find((a: RoundAnswer) => a.slot === question.toSlot);
                         if (answer) {
                             allMessages.push({
@@ -201,7 +195,6 @@ export function DebateReplayPage() {
                     }
                 });
 
-                // Amendments
                 if (round.amendments && round.amendments.length > 0) {
                     allMessages.push({
                         id: `phase-amend-${round.roundNumber}`,
@@ -227,7 +220,6 @@ export function DebateReplayPage() {
             });
         }
 
-        // Voting Phase - show each member voting with their rankings
         const hasVotingData = (state.ballots && state.ballots.length > 0) || (state.results && state.results.length > 0);
         if (hasVotingData) {
             allMessages.push({
@@ -239,14 +231,14 @@ export function DebateReplayPage() {
 
             const memberCount = state.members.length;
 
-            // Check if ballots have rankings data
             const hasRankingsData = state.ballots && state.ballots.some(b => b.ranks && b.ranks.length > 0);
 
             if (hasRankingsData && state.ballots) {
-                // Use actual ballot rankings
                 state.ballots.forEach((ballot) => {
                     const voter = state.members.find(m => m.slot === ballot.slot);
-                    if (!voter || !ballot.ranks || ballot.ranks.length === 0) return;
+                    if (!voter || !ballot.ranks || ballot.ranks.length === 0) {
+                      return;
+                    }
 
                     const sortedRankings = [...ballot.ranks].sort((a, b) => a.rank - b.rank);
                     const rankingText = sortedRankings
@@ -274,20 +266,15 @@ export function DebateReplayPage() {
                     });
                 });
             } else if (state.results && state.results.length > 0) {
-                // Simulate voting based on final results - each voter ranks all members including themselves
                 state.members.forEach((voter) => {
                     const voterPoints: { [slot: number]: number } = {};
 
-                    // Each voter ranks all members (including self)
-                    // Simulate their ranking based on final results order
                     const sortedByFinalScore = [...state.results].sort((a, b) => a.rank - b.rank);
                     sortedByFinalScore.forEach((result) => {
-                        // Points given = n - rank for Borda count
                         const pointsGiven = memberCount - result.rank;
                         voterPoints[result.slot] = pointsGiven;
                     });
 
-                    // Create vote message
                     const rankingText = sortedByFinalScore
                         .map((r) => {
                             const ranked = state.members.find(m => m.slot === r.slot);
@@ -322,9 +309,7 @@ export function DebateReplayPage() {
             });
         }
 
-        // Winner
         if (state.winner) {
-            // Build final standings
             const sortedResults = [...(state.results || [])].sort((a, b) => a.rank - b.rank);
             const standingsText = sortedResults.map(r => {
                 const member = state.members.find(m => m.slot === r.slot);
@@ -357,9 +342,10 @@ export function DebateReplayPage() {
         setMessages(allMessages);
     }, [debate]);
 
-    // Animate messages
     useEffect(() => {
-        if (!isPlaying || currentIndex >= messages.length) return;
+        if (!isPlaying || currentIndex >= messages.length) {
+          return;
+        }
 
         setIsTyping(true);
         const timer = setTimeout(() => {
@@ -371,19 +357,16 @@ export function DebateReplayPage() {
         return () => clearTimeout(timer);
     }, [currentIndex, isPlaying, messages, speed]);
 
-    // Auto-scroll
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [visibleMessages]);
 
     const getMemberColor = (slot: number) => {
-        // Distinct colors for each member slot (avoiding indigo #6366f1 used by system)
-        // Slot 0: Orange, Slot 1: Green, Slot 2: Amber, Slot 3: Red, Slot 4: Purple, Slot 5: Pink, etc.
         const colors = ['#f97316', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
         return colors[slot % colors.length];
     };
 
-    const getSystemColor = () => '#6366f1'; // Indigo for Ludus Logicae
+    const getSystemColor = () => '#6366f1';
 
     const getMemberInitials = (name: string) => {
         return name
@@ -394,7 +377,6 @@ export function DebateReplayPage() {
             .slice(0, 2);
     };
 
-    // Track what info has been revealed based on visible messages
     const revealedInfo = useMemo(() => {
         const info = {
             showDate: false,
@@ -421,7 +403,6 @@ export function DebateReplayPage() {
             if (msg.id === 'intro-participants') {
                 info.showMembersSection = true;
                 info.currentPhase = 'Introductions';
-                // Add all members as "joined" but not yet introduced
                 if (debate?.state?.members) {
                     for (const member of debate.state.members) {
                         if (!info.members.find(m => m.slot === member.slot)) {
@@ -436,14 +417,12 @@ export function DebateReplayPage() {
                     }
                 }
             }
-            // When a member introduces themselves, mark them as introduced
             if (msg.id.startsWith('intro-') && msg.type === 'member' && msg.slot !== undefined) {
                 const member = info.members.find(m => m.slot === msg.slot);
                 if (member) {
                     member.hasIntroduced = true;
                 }
             }
-            // Track phase changes
             if (msg.id === 'phase-initial') {
                 info.currentPhase = 'Initial Answers';
             }
@@ -465,7 +444,6 @@ export function DebateReplayPage() {
             if (msg.id === 'closing') {
                 info.currentPhase = 'Complete';
             }
-            // When a vote is cast, add points to ranked members
             if (msg.type === 'vote' && msg.pointsChange) {
                 for (const change of msg.pointsChange) {
                     const member = info.members.find(m => m.slot === change.slot);
@@ -476,26 +454,30 @@ export function DebateReplayPage() {
             }
         }
 
-        // Sort members by points (descending), then by slot for stable sorting
         info.members.sort((a, b) => {
-            if (b.points !== a.points) return b.points - a.points;
+            if (b.points !== a.points) {
+              return b.points - a.points;
+            }
             return a.slot - b.slot;
         });
 
         return info;
     }, [visibleMessages, debate?.state?.members]);
 
-    // Track who is currently typing based on the next message to appear
     const typingSlots = useMemo(() => {
-        if (!isTyping || currentIndex >= messages.length) return [];
+        if (!isTyping || currentIndex >= messages.length) {
+          return [];
+        }
 
         const nextMessage = messages[currentIndex];
-        if (!nextMessage) return [];
+        if (!nextMessage) {
+          return [];
+        }
 
-        // If it's a system message, no one specific is typing
-        if (nextMessage.type === 'system') return [];
+        if (nextMessage.type === 'system') {
+          return [];
+        }
 
-        // For member messages, show who is typing
         if (nextMessage.slot !== undefined) {
             return [nextMessage.slot];
         }
@@ -542,12 +524,12 @@ export function DebateReplayPage() {
             <div className={styles.mainContent}>
                 <div ref={containerRef} className={styles.chatContainer}>
                 {visibleMessages.map((msg, index) => {
-                    // Determine side: alternate between speakers, but same speaker stays on same side
                     const getSide = (): boolean => {
-                        if (index === 0) return true; // First message is left
+                        if (index === 0) {
+                          return true;
+                        }
 
-                        // Track side for each speaker change
-                        let currentSide = true; // First speaker starts on left
+                        let currentSide = true;
                         let lastSpeaker: string | null = null;
 
                         for (let i = 0; i <= index; i++) {
@@ -555,7 +537,7 @@ export function DebateReplayPage() {
                             const speaker = currMsg.type === 'system' ? 'system' : `member-${currMsg.slot}`;
 
                             if (lastSpeaker !== null && speaker !== lastSpeaker) {
-                                currentSide = !currentSide; // Toggle side for new speaker
+                                currentSide = !currentSide;
                             }
                             lastSpeaker = speaker;
                         }
@@ -619,7 +601,6 @@ export function DebateReplayPage() {
                     );
                 })}
 
-                {/* Typing Indicator */}
                 {isTyping && currentIndex < messages.length && (
                     <div className={styles.typingIndicator}>
                         <div className={styles.typingDot}></div>
@@ -631,7 +612,6 @@ export function DebateReplayPage() {
                 <div ref={messagesEndRef} />
             </div>
 
-                {/* Info Sidebar */}
                 {hasAnyInfo && (
                     <div className={styles.infoSidebar}>
                         {revealedInfo.showDate && (
@@ -733,7 +713,6 @@ export function DebateReplayPage() {
                 )}
             </div>
 
-            {/* Floating Controls */}
             <div className={styles.floatingControls}>
                 <Button
                     variant="ghost"

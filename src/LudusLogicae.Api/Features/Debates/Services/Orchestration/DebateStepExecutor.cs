@@ -22,11 +22,11 @@ public sealed class DebateStepExecutor(
         DebateState state,
         CancellationToken cancellationToken)
     {
-        var (systemPrompts, rawResults) = await initialAnswerExecutor.ExecutePhaseWithSystemPromptsAsync(
+        var result = await initialAnswerExecutor.ExecutePhaseWithSystemPromptsAsync(
             debate, entries, state, cancellationToken);
-        state.SystemPrompts = systemPrompts;
+        state.SystemPrompts = result.SystemPrompts;
 
-        return initialAnswerExecutor.ParseResults(rawResults);
+        return initialAnswerExecutor.ParseResults(result.Results);
     }
 
     public async Task<DebateRound> ExecuteRoundAsync(

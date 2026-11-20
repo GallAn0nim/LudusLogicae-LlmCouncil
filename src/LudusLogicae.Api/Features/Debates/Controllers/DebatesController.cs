@@ -7,53 +7,35 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LudusLogicae.Api.Features.Debates.Controllers;
 
-/// <summary>
-///     API endpoints for managing debates in the debate system.
-/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
 public sealed class DebatesController(IDebateService debateService) : ControllerBase
 {
-    /// <summary>
-    ///     Create a new debate.
-    /// </summary>
-    /// <param name="request">The debate creation request.</param>
-    /// <returns>The created debate.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateResponse>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateResponse>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateDebateRequest request)
     {
-        var (statusCode, envelope, createdId) = await debateService.CreateAsync(request, HttpContext.RequestAborted);
+        var result = await debateService.CreateAsync(request, HttpContext.RequestAborted);
 
-        if (statusCode == StatusCodes.Status201Created && createdId.HasValue)
-            return CreatedAtAction(nameof(GetById), new { id = createdId.Value }, new { response = envelope });
+        if (result.StatusCode == StatusCodes.Status201Created && result.CreatedId.HasValue)
+        {
+            return CreatedAtAction(nameof(GetById), new { id = result.CreatedId.Value }, new { response = result.Envelope });
+        }
 
-        return StatusCode(statusCode, new { response = envelope });
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Get a single debate by ID.
-    /// </summary>
-    /// <param name="id">The unique identifier of the debate.</param>
-    /// <returns>The debate details.</returns>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateResponse>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var (statusCode, envelope) = await debateService.GetByIdAsync(id, HttpContext.RequestAborted);
-        return StatusCode(statusCode, new { response = envelope });
+        var result = await debateService.GetByIdAsync(id, HttpContext.RequestAborted);
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     List debates with optional filters and pagination.
-    /// </summary>
-    /// <param name="status">Filter by debate status (Created, InProgress, Completed).</param>
-    /// <param name="page">Page number (1-based).</param>
-    /// <param name="pageSize">Number of items per page.</param>
-    /// <returns>A paginated list of debates.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(LudusLogicaeResponse<List<DebateResponse>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List(
@@ -61,21 +43,15 @@ public sealed class DebatesController(IDebateService debateService) : Controller
         [FromQuery] int page = PaginationConstants.DefaultPage,
         [FromQuery] int pageSize = PaginationConstants.DefaultPageSize)
     {
-        var (statusCode, envelope) = await debateService.ListAsync(
+        var result = await debateService.ListAsync(
             status,
             page,
             pageSize,
             HttpContext.RequestAborted);
 
-        return StatusCode(statusCode, new { response = envelope });
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Update an existing debate (only if status is Created).
-    /// </summary>
-    /// <param name="id">The unique identifier of the debate to update.</param>
-    /// <param name="request">The debate update request.</param>
-    /// <returns>The updated debate.</returns>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateResponse>), StatusCodes.Status400BadRequest)]
@@ -84,34 +60,26 @@ public sealed class DebatesController(IDebateService debateService) : Controller
         [FromRoute] Guid id,
         [FromBody] UpdateDebateRequest request)
     {
-        var (statusCode, envelope) = await debateService.UpdateAsync(id, request, HttpContext.RequestAborted);
-        return StatusCode(statusCode, new { response = envelope });
+        var result = await debateService.UpdateAsync(id, request, HttpContext.RequestAborted);
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Delete a debate by ID (only if status is Created).
-    /// </summary>
-    /// <param name="id">The unique identifier of the debate to delete.</param>
-    /// <returns>No content on success.</returns>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<string>), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<string>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var (statusCode, envelope) = await debateService.DeleteAsync(id, HttpContext.RequestAborted);
+        var result = await debateService.DeleteAsync(id, HttpContext.RequestAborted);
 
-        if (statusCode == StatusCodes.Status204NoContent) return NoContent();
+        if (result.StatusCode == StatusCodes.Status204NoContent)
+        {
+            return NoContent();
+        }
 
-        return StatusCode(statusCode, new { response = envelope });
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Fully run a debate and execute the complete debate flow.
-    /// </summary>
-    /// <param name="id">The unique identifier of the debate to run.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The complete debate state after execution.</returns>
     [HttpPost("{id:guid}/fully-run")]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateState>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<DebateState>), StatusCodes.Status400BadRequest)]
@@ -120,7 +88,7 @@ public sealed class DebatesController(IDebateService debateService) : Controller
         [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        var (statusCode, envelope) = await debateService.FullyRunDebateAsync(id, cancellationToken);
-        return StatusCode(statusCode, envelope);
+        var result = await debateService.FullyRunDebateAsync(id, cancellationToken);
+        return StatusCode(result.StatusCode, result.Envelope);
     }
 }

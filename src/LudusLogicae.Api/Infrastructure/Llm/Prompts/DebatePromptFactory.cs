@@ -102,7 +102,7 @@ Text content must be Polish or English only. Prioritize language of question.
         var prompt = template
             .Replace("{MemberName}", entry.Name)
             .Replace("{discipline}", entry.Role)
-            .Replace("{provider}", "OpenAI")
+            .Replace("{provider}", entry.Provider)
             .Replace("{model}", entry.Model)
             .Replace("{styleHint}", entry.StyleHint)
             .Replace("{behaviorExtras}", entry.BehaviorExtras)

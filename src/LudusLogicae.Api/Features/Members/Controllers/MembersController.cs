@@ -5,20 +5,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LudusLogicae.Api.Features.Members.Controllers;
 
-/// <summary>
-///     API endpoints for managing AI members in the debate system.
-/// </summary>
 [ApiController]
 [Route("api/members")]
 [Produces("application/json")]
 public sealed class MembersController(IMembersService membersService) : ControllerBase
 {
-    /// <summary>
-    ///     Generate an introduction for this member via its configured LLM provider.
-    /// </summary>
-    /// <param name="id">The unique identifier of the member.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The generated introduction.</returns>
     [HttpPost("{id:guid}/introductions")]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberIntroductionResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberIntroductionResponse>), StatusCodes.Status404NotFound)]
@@ -27,62 +18,42 @@ public sealed class MembersController(IMembersService membersService) : Controll
         [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        var (statusCode, envelope) = await membersService.IntroduceAsync(id, cancellationToken);
-        return StatusCode(statusCode, new { response = envelope });
+        var result = await membersService.IntroduceAsync(id, cancellationToken);
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-
-    /// <summary>
-    ///     List members with optional filters and pagination.
-    /// </summary>
-    /// <param name="query">Query parameters for filtering, searching, and pagination.</param>
-    /// <returns>A paginated list of members.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MembersListResponse>), StatusCodes.Status200OK)]
     public async Task<IActionResult> List([FromQuery] MemberListQuery query)
     {
-        var (statusCode, envelope) = await membersService.ListAsync(query, HttpContext.RequestAborted);
-        return StatusCode(statusCode, new { response = envelope });
+        var result = await membersService.ListAsync(query, HttpContext.RequestAborted);
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Get a single member by ID.
-    /// </summary>
-    /// <param name="id">The unique identifier of the member.</param>
-    /// <returns>The member details.</returns>
     [HttpGet("{id:guid}")]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberDto>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var (statusCode, envelope) = await membersService.GetByIdAsync(id, HttpContext.RequestAborted);
-        return StatusCode(statusCode, new { response = envelope });
+        var result = await membersService.GetByIdAsync(id, HttpContext.RequestAborted);
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Create a new member.
-    /// </summary>
-    /// <param name="request">The member creation request.</param>
-    /// <returns>The created member.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberDto>), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberDto>), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateMemberRequest request)
     {
-        var (statusCode, envelope, createdId) = await membersService.CreateAsync(request, HttpContext.RequestAborted);
+        var result = await membersService.CreateAsync(request, HttpContext.RequestAborted);
 
-        if (statusCode == StatusCodes.Status201Created && createdId.HasValue)
-            return CreatedAtAction(nameof(GetById), new { id = createdId.Value }, new { response = envelope });
+        if (result.StatusCode == StatusCodes.Status201Created && result.CreatedId.HasValue)
+        {
+            return CreatedAtAction(nameof(GetById), new { id = result.CreatedId.Value }, new { response = result.Envelope });
+        }
 
-        return StatusCode(statusCode, new { response = envelope });
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Update an existing member (full update).
-    /// </summary>
-    /// <param name="id">The unique identifier of the member to update.</param>
-    /// <param name="request">The member update request.</param>
-    /// <returns>The updated member.</returns>
     [HttpPut("{id:guid}")]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberDto>), StatusCodes.Status400BadRequest)]
@@ -91,24 +62,22 @@ public sealed class MembersController(IMembersService membersService) : Controll
         [FromRoute] Guid id,
         [FromBody] UpdateMemberRequest request)
     {
-        var (statusCode, envelope) = await membersService.UpdateAsync(id, request, HttpContext.RequestAborted);
-        return StatusCode(statusCode, new { response = envelope });
+        var result = await membersService.UpdateAsync(id, request, HttpContext.RequestAborted);
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 
-    /// <summary>
-    ///     Delete a member by ID (hard delete).
-    /// </summary>
-    /// <param name="id">The unique identifier of the member to delete.</param>
-    /// <returns>No content on success.</returns>
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(LudusLogicaeResponse<MemberDto>), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
-        var (statusCode, envelope) = await membersService.DeleteAsync(id, HttpContext.RequestAborted);
+        var result = await membersService.DeleteAsync(id, HttpContext.RequestAborted);
 
-        if (statusCode == StatusCodes.Status204NoContent) return NoContent();
+        if (result.StatusCode == StatusCodes.Status204NoContent)
+        {
+            return NoContent();
+        }
 
-        return StatusCode(statusCode, new { response = envelope! });
+        return StatusCode(result.StatusCode, new { response = result.Envelope });
     }
 }

@@ -8,18 +8,19 @@ namespace LudusLogicae.Api.Features.Debates.Services.Orchestration.Phases;
 
 public record InitialAnswerPhaseInput(string Phase, string DebateTopic);
 
+public record InitialAnswerPhaseResult(Dictionary<int, string> SystemPrompts, List<RawPhaseResult> Results);
+
 public sealed class InitialAnswerPhaseExecutor(
     ILlmResponseGenerator responseGenerator,
     DebatePromptFactory promptFactory,
     IDebateResponseParser responseParser)
     : BasePhaseExecutor<InitialAnswerPhaseInput, MemberAnswer[]>(responseGenerator, promptFactory, responseParser)
 {
-    public async Task<(Dictionary<int, string> SystemPrompts, List<RawPhaseResult> Results)>
-        ExecutePhaseWithSystemPromptsAsync(
-            Debate debate,
-            List<DebateParticipant> participants,
-            DebateState state,
-            CancellationToken ct)
+    public async Task<InitialAnswerPhaseResult> ExecutePhaseWithSystemPromptsAsync(
+        Debate debate,
+        List<DebateParticipant> participants,
+        DebateState state,
+        CancellationToken ct)
     {
         var systemPrompts = new Dictionary<int, string>();
         var requestInputs = participants.Select(p =>
@@ -27,13 +28,13 @@ public sealed class InitialAnswerPhaseExecutor(
             var systemPrompt = PromptFactory.BuildSystemPrompt(p, debate.NMembers);
             systemPrompts[p.SlotIndex] = systemPrompt;
 
-            return (
+            return new PhaseRequest<InitialAnswerPhaseInput>(
                 p.SlotIndex,
+                p.Provider,
                 p.Model,
                 p.Temperature,
-                SystemPrompt: systemPrompt,
-                Input: CreatePhaseInput(debate, p, state)
-            );
+                systemPrompt,
+                CreatePhaseInput(debate, p, state));
         }).ToList();
 
         var result = await ResponseGenerator.GenerateResponsesInParallelAsync(
@@ -53,7 +54,7 @@ public sealed class InitialAnswerPhaseExecutor(
                 $"Failures: {failureDetails}");
         }
 
-        return (systemPrompts, result.SuccessfulResponses);
+        return new InitialAnswerPhaseResult(systemPrompts, result.SuccessfulResponses);
     }
 
     protected override InitialAnswerPhaseInput CreatePhaseInput(
